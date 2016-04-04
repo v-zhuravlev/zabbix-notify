@@ -7,5 +7,6 @@ perl:
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y cpanminus
-  - cpanm --quiet --installdeps --notest .
+  - cpanm --quiet --installdeps --notest lib
+  - cpanm --quiet --installdeps --notest bin
   
