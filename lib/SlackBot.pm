@@ -1,6 +1,6 @@
 package SlackBot;
 use strict;
-
+our $VERSION = 0.1;
 
 use subs 'channel';
 use Class::Tiny qw( api_token web_api_url debug username channel);
