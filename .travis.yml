@@ -1,13 +1,12 @@
 language: perl
 perl:
   - "5.22"
-  - "5.20"
-  - "5.18"
-  - "5.14"
+#  - "5.20"
+#  - "5.18"
+#  - "5.14"
 before_install:
 #  - cpanm --install JSON::XS
 #  - cpanm --install LWP
 #  - cpanm --install Class::Tiny
-   - ls
-   - cpanm --installdeps .
+   - cpanm --installdeps SlackBot
   
