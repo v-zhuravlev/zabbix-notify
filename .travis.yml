@@ -6,7 +6,6 @@ perl:
   - "5.14"
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y libwww-perl libjson-xs-perl
   - sudo apt-get install -y cpanminus
-  - cpanm Class::Tiny
+  - cpanm --quiet --installdeps --notest .
   
