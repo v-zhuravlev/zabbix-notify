@@ -1,0 +1,6 @@
+MANIFEST
+LICENSE
+Makefile.PL
+lib/SlackBot.pm
+bin/zbx-slack
+t/001_load.t

@@ -1,0 +1,78 @@
+#!/usr/bin/perl -w
+
+use strict;
+use 5.010;
+use Data::Dumper;
+use Getopt::Long;
+use SlackBot;
+
+
+my %contents;
+my $debug = 0;
+my ( $api_token, $mode );
+my $username = 'Zabbix';    # if not defined then default is used
+$contents{mode} =  "alarm";    #default mode
+$mode = "alarm";   # if not defined then default is used (can be alarm or event)
+GetOptions(
+    "username=s"  => \$username,
+    "api_token=s" => \$api_token,
+    "debug"       => \$debug,
+    "mode=s"      => \$contents{mode}
+) or die("Error in command line arguments\n");
+die "You must provide 'api_token' in config file\n" unless $api_token;
+die "Invalid mode is provied. Please use 'alarm' or 'event'\n"
+  unless $contents{mode} =~ /alarm|event/;
+
+utf8::decode($username);
+
+#get params (from,subject,message from zabbix notification)
+binmode STDOUT, ":encoding(UTF-8)";
+my $channel = shift @ARGV or die "Invalid number of arguments\n";
+
+$contents{subject} = shift @ARGV;
+utf8::decode( $contents{subject} );
+die "Subject provided is wrong\n"
+  unless $contents{subject} =~ m/^[[:print:]]+$/;    #subject
+
+$contents{message} = shift @ARGV;
+utf8::decode( $contents{message} );
+die "Message provided is wrong\n"
+  unless $contents{message} =~ m/^( [[:print:]] | \n | \r )+$/x;    #message
+
+#parse contents to find something interesting (OK|PROBLEM, SEVERITY LEVEL...)
+%contents = ( %contents, parse_message( $contents{message} ) );
+
+my $slack_bot = SlackBot->new( { api_token => $api_token } );
+
+print $slack_bot->debug($debug) if $debug;
+$slack_bot->channel($channel);
+$slack_bot->username($username);
+
+print Dumper $slack_bot if $debug;
+binmode STDOUT, ":raw";
+
+$slack_bot->post_message( \%contents );
+
+#######EXTRA SUBS################
+sub parse_message {
+    my $message = shift;
+    my %result;
+    $result{'status'} = 'PROBLEM';
+    given ($message) {    #Valid values: any html code for color
+        when (/eventid: *(\d+)/i) { $result{'eventid'} = $1;        continue }
+        when (/\bPROBLEM\b/)      { $result{'status'}  = 'PROBLEM'; continue }
+        when (/\bOK\b/) {
+            $result{'status'} = 'OK';
+            $result{'color'}  = '#CCFFCC';
+        }
+        when (/\bNot classified\b/) { $result{'color'} = '#DBDBDB' }
+        when (/\bInformation\b/)    { $result{'color'} = '#CCFFCC' }
+        when (/\bWarning\b/)        { $result{'color'} = '#FFFFCC' }
+        when (/\bAverage\b/)        { $result{'color'} = '#FFCCCC' }
+        when (/\bHigh\b/)           { $result{'color'} = '#FF9999' }
+        when (/\bDisaster\b/)       { $result{'color'} = '#FF3838' }
+        default                     { $result{'color'} = '#DBDBDB' }
+    }
+    return %result;
+}
+
