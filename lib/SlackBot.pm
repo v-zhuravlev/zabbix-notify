@@ -389,16 +389,16 @@ sub get_with_retries {
   ATTEMPT: {
 
         $response = $ua->get($url);
-        check_slack_response($response);
 
         if ( $response->is_success ) {
 
             #Check the status of the notification submission.
+            check_slack_response($response);
             print "Slack was connected successfully.\n";
         }
         else {
             if ( $response->code == HTTP_TOO_MANY_REQUESTS ) {
-                if ( $response->header('Retry-After') > 0 ) {
+                if ( defined($response->header('Retry-After')) and $response->header('Retry-After') > 0 ) {
                     $retry_after = $response->header('Retry-After');
                 }
 
@@ -408,13 +408,13 @@ sub get_with_retries {
                 sleep $retry_after;
 
                 #decode_and_print_slack_bad_response( $response->content );
-                die "Slack conn failed! ${ \$response->status_line } \n"
-                  if $retry_counter < 1;
+                if ($retry_counter < 1) {die "Too many retries, unable to send message: ${ \$response->status_line } \n";}
+                
                 $retry_counter--;
                 redo ATTEMPT;
             }
             else {
-                #decode_and_print_slack_bad_response( $response->content );
+                check_slack_response($response);
                 die "Slack conn failed! ${ \$response->status_line } \n";
             }
         }

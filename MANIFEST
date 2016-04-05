@@ -4,3 +4,4 @@ Makefile.PL
 lib/SlackBot.pm
 bin/zbx-slack
 t/001_load.t
+t/002_slack_mocks.t
