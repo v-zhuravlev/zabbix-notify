@@ -8,5 +8,6 @@ before_install:
   - cpanm --install JSON::XS
   - cpanm --install LWP
   - cpanm --install Class::Tiny
+  - cpanm --install Test::Exception
 
   
