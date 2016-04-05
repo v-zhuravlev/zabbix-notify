@@ -3,22 +3,20 @@ use strict;
 our $VERSION = 0.1;
 
 use subs 'channel';
-use Class::Tiny qw( api_token web_api_url debug username channel);
+use Class::Tiny qw( api_token web_api_url debug username channel mock_url last_err);
 use LWP;
 use URI;
 use Carp;
 use JSON::XS;
-use Data::Dumper;    #temp
-                     #use Storable qw(lock_store lock_retrieve);
-use Storable;
-use File::Basename;
+use Data::Dumper;
+use Storable qw(lock_store lock_retrieve);
 
 use constant {
     HTTP_TOO_MANY_REQUESTS => 429,
     RETRY_DEFAULT          => 2,
     RETRY_WAIT_SECS        => 5,
-
-    #STORAGEFILE => 'zbx-slack-temp-storage'
+    RETRY_TIMEOUT_SECS     => 20,
+    CLEAR_ALARM_AFTER_SECS => 10,
     STORAGEFILE => '/var/tmp/zbx-slack-temp-storage',
 };
 
@@ -38,6 +36,7 @@ sub BUILDARGS {
         debug       => $debug,
         username    => $username,
         channel     => $channel,
+        last_err    => ''
     };
 }
 
@@ -45,8 +44,8 @@ sub channel {
     my $self = shift;
     if (@_) {
         my $channel = shift;
-        validate_slack_channel($channel)
-          ;    #<----whats added to default get/set
+        #<----whats added to default get/set:
+        validate_slack_channel($channel);
         return $self->{channel} = $channel;
     }
     elsif ( exists $self->{channel} ) {
@@ -83,9 +82,8 @@ sub post_message {
     {
         print "Alarm recovery message!\n";
 
-#my @resp = $self->search_message({query=>'eventid: '.$contents->{eventid}});
-
         my $mes_to_replace;
+        my $update_success;
         if ( $mes_to_replace = retrieve_from_store( $contents->{eventid} ) )
         {
             print Dumper $mes_to_replace if $self->debug;
@@ -98,7 +96,10 @@ sub post_message {
                 }
             );
         }
-        else {    #post the recovery then
+        
+        if (!$mes_to_replace or $self->last_err eq 'message_not_found') {
+
+        #post the recovery then
             print "No messages found to be deleted\n";
 
             my $message =
@@ -109,7 +110,7 @@ sub post_message {
             };
         }
 
-        sleep 5;
+        sleep CLEAR_ALARM_AFTER_SECS;
 
         $self->chat_deleteMessage(
             {
@@ -249,37 +250,45 @@ sub search_message {
 
 }
 
-#helpers
-sub check_slack_response {    #check for errors or warnings;
 
+sub check_slack_response {  
+    my $self    = shift;
     my $response = shift;
+    
+    $self->last_err('') if $self->last_err ne ''; #delete prev error
+    
     if ( !$response->is_success ) {
-        croak "Error: ", $response->status_line unless $response->is_success;
+        die "Error: ", $response->status_line."\n";
         return 0;
     }
     my $json_resp = JSON::XS->new->utf8->decode( $response->content );
     if ( !$json_resp->{ok} ) {
-        croak "Error " . $json_resp->{error} unless $json_resp->{ok};
+        if ($json_resp->{error} eq 'message_not_found'){
+            $self->last_err('message_not_found');
+            return 1;
+        }
+        
+        die "Error " . $json_resp->{error}. "\n";
         return 0;
     }
     else {
         carp "Warning " . $json_resp->{warning} if $json_resp->{warning};
         return 1;
     }
+       
 }
 
+#helpers
 sub store_message {
     my $eventid      = shift;
     my $message      = shift;
-    #my $storage_file = dirname(__FILE__) . '/' . STORAGEFILE;
     my $storage_file = STORAGEFILE;
     my $stored;
 
     if ( -f $storage_file ) {
 
-        #$stored = lock_retrieve $storage_file;
-        #$stored = retrieve $storage_file;
-        $stored = retrieve STORAGEFILE;
+        $stored = lock_retrieve $storage_file;
+
     }
 
     $stored->{$eventid} = {
@@ -287,10 +296,8 @@ sub store_message {
         channel => $message->{channel}
     };
 
-    #lock_store $stored, $storage_file;
-    store $stored, $storage_file;
+    lock_store $stored, $storage_file;
 
-    #unlock($storage_file);
 
 }
 
@@ -301,22 +308,14 @@ sub retrieve_from_store {
     my $message_to_delete;
 
     if ( -f $storage_file ) {
-        $stored = retrieve $storage_file;
 
-        #$stored = lock_retrieve $storage_file;
+        $stored = lock_retrieve $storage_file;
 
         if ( $message_to_delete = delete $stored->{$eventid} ) {
-            print $message_to_delete;
 
-            print "What is left in storage: :";
-
-            store $stored, $storage_file;
-
-            #lock_store $stored, $storage_file;
+            lock_store $stored, $storage_file;
         }
     }
-
-    #unlock($storage_file);
 
     return $message_to_delete;
 
@@ -342,13 +341,13 @@ sub create_json_if_plain {
     };
     if ($@) {
         print
-"message is not a JSON, going to proceed as as with regular text\n";
+"message is not JSON, going to proceed as with regular text\n";
         $json_attach = create_json_attach_only($contents);
         return $json_attach;
     }
     else {
         print
-"message is in JSON, going to proceed as as with JSON attachment\n";
+"message is JSON, going to proceed as with JSON attachment\n";
         if (   !defined( $json_hash->{color} )
             and exists( $contents->{color} ) )
         {
@@ -383,18 +382,28 @@ sub get_with_retries {
     my $retry_after   = RETRY_WAIT_SECS;
     my $response;
     my $ua      = LWP::UserAgent->new();
-    my $timeout = 3;
-
-    print $url if ( $self->debug );
+    my $timeout = RETRY_TIMEOUT_SECS;
+    
+    
+    if ( defined($self->mock_url) ) { $url = $self->mock_url; }#mock replace: 
+    
+    print $url."\n" if ( $self->debug );
+    
+    local $SIG{ALRM} = sub { die "Global timeout alarm! Having problems connecting to ".$self->web_api_url ." \n"; };
+    
+ 
   ATTEMPT: {
-
+        alarm($timeout);
         $response = $ua->get($url);
 
         if ( $response->is_success ) {
 
             #Check the status of the notification submission.
-            check_slack_response($response);
-            print "Slack was connected successfully.\n";
+            alarm(0);
+            $self->check_slack_response($response);
+            print "Slack response OK.\n";
+            return $response;
+        
         }
         else {
             if ( $response->code == HTTP_TOO_MANY_REQUESTS ) {
@@ -407,19 +416,18 @@ sub get_with_retries {
 
                 sleep $retry_after;
 
-                #decode_and_print_slack_bad_response( $response->content );
+                
                 if ($retry_counter < 1) {die "Too many retries, unable to send message: ${ \$response->status_line } \n";}
                 
                 $retry_counter--;
                 redo ATTEMPT;
             }
             else {
-                check_slack_response($response);
-                die "Slack conn failed! ${ \$response->status_line } \n";
+                
+                die "Slack connection failed! ${ \$response->status_line } \n";
             }
         }
     }
-    return $response;
 
 }
 

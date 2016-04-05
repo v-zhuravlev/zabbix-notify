@@ -44,11 +44,13 @@ die "Message provided is wrong\n"
 
 my $slack_bot = SlackBot->new( { api_token => $api_token } );
 
-print $slack_bot->debug($debug) if $debug;
+$slack_bot->debug($debug) if $debug;
 $slack_bot->channel($channel);
 $slack_bot->username($username);
 
 print Dumper $slack_bot if $debug;
+print "\n";
+
 binmode STDOUT, ":raw";
 
 $slack_bot->post_message( \%contents );
