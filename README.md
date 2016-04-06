@@ -72,10 +72,12 @@ cpanm install Class::Tiny
 ```
 Once this is done, download tar and install it into the system:  
 ```
-perl Makefile.PL
+perl Makefile.PL INSTALLSITESCRIPT=/usr/local/share/zabbix/alertscripts
 make test
 make install
 ```
+where INSTALLSITESCRIPT is your Zabbix's  alert script folder as defined in zabbix_server.conf.  
+
 Please note that currently `make test` requires Internet connection to test with mocks :) So skip if you don't have one.
 
 Once installed, test the script by running it under user Zabbix:
@@ -169,32 +171,20 @@ In order to troubleshoot problems, try to send test message from the command lin
 You may also want to increase the logging of alerter process to DEBUG for a while. 
 (optional) If appropriate, decrease the level of logging of all zabbix processes to reduce the noise in the log file:  
 ```
-# zabbix_server --runtime-control log_level_decrease
-# zabbix_server --runtime-control log_level_decrease
-# zabbix_server --runtime-control log_level_decrease
-# zabbix_server --runtime-control log_level_decrease
+zabbix_server --runtime-control log_level_decrease
+zabbix_server --runtime-control log_level_decrease
+zabbix_server --runtime-control log_level_decrease
+zabbix_server --runtime-control log_level_decrease
 ```
 
 Then increase the logging of alerter process to DEBUG for a while: 
 
 To do it run it as many times as required to reach DEBUG from your current level (4 times if your current log level is 0)
 ```
-#zabbix_server --runtime-control log_level_increase=alerter  
-#zabbix_server --runtime-control log_level_increase=alerter  
-#zabbix_server --runtime-control log_level_increase=alerter  
-#zabbix_server --runtime-control log_level_increase=alerter  
+zabbix_server --runtime-control log_level_increase=alerter  
+zabbix_server --runtime-control log_level_increase=alerter  
+zabbix_server --runtime-control log_level_increase=alerter  
+zabbix_server --runtime-control log_level_increase=alerter  
 ```
 now tail you log to see what the problem might be:
 `tail -f /var/log/zabbix-server/zabbix_server.log`  
-
-```
-
- 11996:20160406:114044.642 log level has been increased to 4 (debug)
- 11996:20160406:114058.644 __zbx_zbx_setproctitle() title:'alerter [sending alerts]'
-...
- 11996:20160406:114058.645 query [txnlev:0] [update alerts set retries=1,error='/etc/zabbix/alert.d//zbx-slack: [2] No such file or directory' where alertid=2466683]
- 11996:20160406:114058.646 In execute_action(): alertid [2466686] mediatype [1]
- 11996:20160406:114058.646 End of execute_action():FAIL
- 11996:20160406:114058.646 error sending alert ID [2466686]
- 11996:20160406:114058.646 query without transaction detected
- ```
