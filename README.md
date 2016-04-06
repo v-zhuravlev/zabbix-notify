@@ -3,25 +3,35 @@
 Notify alarms from Zabbix 3.0 to Slack, HipChat and PagerDuty  
 
 # About
-This guide provides step-by-step guide how to install and use scripts to send notifications from Zabbix to popular collaborations platforms: **HipChat**, **Slack** and Incident Management system **PagerDuty**. Integration is very simple: it uses REST API provided by the receiving side. 
+This guide provides step-by-step guide how to install and use scripts to send notifications from Zabbix to popular collaborations platforms: **HipChat**, **Slack** and Incident Management system **PagerDuty**.
 Here is the idea in brief:  
 -	install scripts on Zabbix Server
--	in HipChat, Slack or PagerDuty generate access key for zabbix
+-	in HipChat, Slack or PagerDuty generate access key for Zabbix
 -	In Zabbix setup new Media Type, Actions and assign new media type to new impersonal user
 -	Catch messages in Slack channel, HipChat room or PagerDuty Console:
 ![image](https://cloud.githubusercontent.com/assets/14870891/14309222/bc9f510e-fbe3-11e5-94ff-66a313b00874.png)  
 ![image](https://cloud.githubusercontent.com/assets/14870891/14309233/c7aba6ba-fbe3-11e5-80a2-f42bc1abbb76.png)  
 ![image](https://cloud.githubusercontent.com/assets/14870891/14309241/d13943e0-fbe3-11e5-8242-3292dd8a91d5.png)  
- 
- 
 
- 
-Features Include:  
--	Straightforward integration using well known protocols and languages: REST API, OAuth tokens, JSON
--	Color coding events depending on Trigger Status and Severity in Slack and Hipchat
+
+
+## Features Include:  
+**All:**  
+-	All configuration is done in Zabbix web-interface(no config files anywhere)  
+-	UTF8 supported  
+**Slack:**  
+-	Color coding events depending on Trigger Status and Severity  
+-	Recovery message from Zabbix will update and then delete already posted message in Slack (--mode=alarm)  
+-	Recovery message from Zabbix will be posted as new message (--mode=event)  
+-	JSON can be used to compose Slack messages. See Slack [message attachments](https://api.slack.com/docs/attachments)  
+
+**HipChat:**  
+-	Color coding events depending on Trigger Status and Severity
+-	HTML or plain text can be used to format HipChat messages.
+
+**PagerDuty:**  
 -	Recovery message from Zabbix will resolve already created incident in PagerDuty
--	All configuration is done in Zabbix web-interface
--	HTML can be used to format HipChat messages. Slack and PagerDuty use internal formating
+
 
 There are limitations to note as well:  
 -	Slack and HipChat can reject you messages if you are sending them too often (more then 1 per second). It can accept short bursts but If you continue to spam - you will be blocked for one minute or so. So use Acton Conditions wisely to avoid event storms.
@@ -90,15 +100,15 @@ cd /usr/local/share/zabbix/alertscripts
 ```
 To ADD ALARM
 ```
-zbx-slack '@your_name_in_slack_here' 'PROBLEM:myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1' 'Host: myHOSTNAME
+zbx-slack @your_name_in_slack_here 'PROBLEM:myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1' 'Host: myHOSTNAME
 Trigger: PROBLEM: myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1: High
-Timestamp: 2016.03.14 11:57:10 YEKT eventid: 100502' --api_token='you token here'
+Timestamp: 2016.03.14 11:57:10 YEKT eventid: 100502' --api_token=you token here
 ```
 To CLEAR ALARM RUN
 ```
-zbx-slack '@your_name_in_slack_here' 'OK:myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1' 'Host: myHOSTNAME
+zbx-slack @your_name_in_slack_here 'OK:myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1' 'Host: myHOSTNAME
 Trigger: OK: myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1: High
-Timestamp: 2016.03.14 11:57:10 YEKT eventid: 100502' --api_token='you token here'
+Timestamp: 2016.03.14 11:57:10 YEKT eventid: 100502' --api_token=you token here
 ```
 
 ## Zabbix Configuration (Slack)
@@ -172,7 +182,7 @@ eventid: {EVENT.ID}
 Note:  if you place Macros **{TRIGGER.SEVERITY}** and **{STATUS}** then your messages in Slack will be color coded.  
 Note:  place line `eventid: {EVENT.ID}` if you want to use Alarm mode (which is default)  
 ![image](https://cloud.githubusercontent.com/assets/14870891/14313896/f3edc7e4-fbfc-11e5-842a-2e7410c8d755.png)  
-As an alternative you can place JSON object here that would represent Slack attachment: https://api.slack.com/docs/attachments  
+As an alternative you can place JSON object here that would represent Slack [attachment:](https://api.slack.com/docs/attachments)  
 ```
 {
             "fallback": "{STATUS} : {HOSTNAME} : {TRIGGER.NAME} fallback",
@@ -203,8 +213,7 @@ In **Condition** tab do not forget to include **Trigger value = Problem conditio
 In **Operations** tab select Notification Agent as recipient of the message sent via Slack.  
 ![image](https://cloud.githubusercontent.com/assets/14870891/14314053/d123e30a-fbfd-11e5-8717-74113151b4da.png)  
 
-More on Action configuration in Zabbix can be found here:  
-https://www.zabbix.com/documentation/3.0/manual/config/notifications/action  
+More on Action configuration in Zabbix can be found  [here:](https://www.zabbix.com/documentation/3.0/manual/config/notifications/action)    
 
 That it is it  
 
