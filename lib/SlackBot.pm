@@ -332,12 +332,17 @@ sub validate_slack_channel {
     }
 }
 
+
+=create_json_if_plain
+$contents must be already utf8 decoded if non ASCII is present
+like utf8::decode( $contents );
+=cut
 sub create_json_if_plain {
     my $contents = shift;
     my $json_hash;
     my $json_attach;
     eval {    #check if already JSON:
-        $json_hash = JSON::XS->new->utf8->decode( $contents->{message} );
+        $json_hash = JSON::XS->new->decode( $contents->{message} );
     };
     if ($@) {
         print
@@ -356,7 +361,7 @@ sub create_json_if_plain {
             $json_hash->{color} = $contents->{color};
 
         }
-        $json_attach = JSON::XS->new->utf8->encode( [$json_hash] );
+        $json_attach = JSON::XS->new->encode( [$json_hash] );
         return $json_attach;
     }
 }
