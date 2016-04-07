@@ -10,7 +10,7 @@ use SlackBot;
 my %contents;
 my $debug = 0;
 my ( $api_token, $mode );
-my $username = 'Zabbix';    # if not defined then default is used
+my $username;    # if not defined then default is used
 $contents{mode} =  "alarm";    #default mode
 $mode = "alarm";   # if not defined then default is used (can be alarm or event)
 GetOptions(
@@ -46,7 +46,7 @@ my $slack_bot = SlackBot->new( { api_token => $api_token } );
 
 $slack_bot->debug($debug) if $debug;
 $slack_bot->channel($channel);
-$slack_bot->username($username);
+$slack_bot->username($username) if $username;
 
 print Dumper $slack_bot if $debug;
 print "\n";

@@ -123,7 +123,7 @@ sub post_message {
     else {
         print "Alarm message or plain event message!\n";
         my $message = $self->chat_postMessage(
-            { username => "Zabbix bot", attachments => $json_attach } );
+            { attachments => $json_attach } );
         if ( $contents->{mode} eq 'alarm' ) {
             store_message( $contents->{eventid}, $message );
         }
@@ -140,21 +140,26 @@ sub chat_postMessage {
          $args->{channel}
       || $self->channel
       || die "Failed to postMessage: channel is required\n";
-    my $username =
-         $args->{username}
-      || $self->username
-      || die "Failed to postMessage: username is required\n";
+    my $username = $args->{username} || $self->username;
+      
     my $json_attach = $args->{attachments}
       || die "Failed to postMessage: no attachment is provided\n";
 
     my $url = URI->new( $self->web_api_url . 'chat.postMessage' );
-    $url->query_form(
+    my %form_params = (
         'token'       => $self->api_token,
         'channel'     => $channel,
+        'attachments' => $json_attach);
+    
+    if ($username) {
+    %form_params = (%form_params, (
         'username'    => $username,
-        'as_user'     => 'true',
-        'attachments' => $json_attach
-    );
+        'as_user'     => 'false',)
+        );
+    }
+    print Dumper \%form_params;
+          
+    $url->query_form(%form_params);
 
     my $response      = $self->get_with_retries($url);
     my $json_contents = JSON::XS->new->utf8->decode( $response->content );
