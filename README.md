@@ -67,11 +67,10 @@ In Centos  you can do it like so:
 ```
 yum install perl-JSON-XS perl-libwww-perl
 ```
-Install Class::Tiny(and others if you want) from CPAN:  
+or you can install modules from CPAN  
 ```
 PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install Bundle::LWP'
 PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install JSON::XS
-PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install Class::Tiny'
 ```
 or cpanminus (faster):  
 ```
@@ -81,7 +80,6 @@ and then
 ```
 cpanm install LWP
 cpanm install JSON::XS
-cpanm install Class::Tiny
 ```
 Once this is done, download tar and install it into the system:  
 ```
@@ -135,6 +133,7 @@ Here is what you can setup for Slack:
 | api_token        |  you bot api token(Mandatory)    | none           |--api_token=xoxb-30461853043-mQE7IGah4bGeC15T5gua4IzK|  
 | mode        |  operation mode(alarm or event)   | alarm           |--mode=event|  
 | debug        |  For providing debug output, useful when running from command line   |   none         |--debug|  
+| nofork        |  To prevent script from forking on posting to Slack    |   none         |--nofork|  
 
 Press *Add* to finish media type creation.  
 
@@ -219,6 +218,7 @@ That it is it
 
 # Troubleshooting
 In order to troubleshoot problems, try to send test message from the command line under user `zabbix`.  
+Try using --nofork and --debug command line switches  
 
 You may also want to increase the logging of alerter process to DEBUG for a while. 
 (optional) If appropriate, decrease the level of logging of all zabbix processes to reduce the noise in the log file:  
