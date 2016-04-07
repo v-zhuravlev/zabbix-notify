@@ -149,7 +149,8 @@ sub chat_postMessage {
     my %form_params = (
         'token'       => $self->api_token,
         'channel'     => $channel,
-        'attachments' => $json_attach);
+        'attachments' => $json_attach,
+        'as_user'     => 'true',);
     
     if ($username) {
     %form_params = (%form_params, (
