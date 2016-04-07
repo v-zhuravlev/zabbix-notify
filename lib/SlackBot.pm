@@ -15,7 +15,6 @@ use constant {
     HTTP_TOO_MANY_REQUESTS => 429,
     RETRY_DEFAULT          => 2,
     RETRY_WAIT_SECS        => 5,
-    RETRY_TIMEOUT_SECS     => 20,
     CLEAR_ALARM_AFTER_SECS => 10,
     STORAGEFILE => '/var/tmp/zbx-slack-temp-storage',
 };
@@ -387,24 +386,24 @@ sub get_with_retries {
     my $retry_after   = RETRY_WAIT_SECS;
     my $response;
     my $ua      = LWP::UserAgent->new();
-    my $timeout = RETRY_TIMEOUT_SECS;
+    
     
     
     if ( defined($self->mock_url) ) { $url = $self->mock_url; }#mock replace: 
     
     print $url."\n" if ( $self->debug );
     
-    local $SIG{ALRM} = sub { die "Global timeout alarm! Having problems connecting to ".$self->web_api_url ." \n"; };
+    
     
  
   ATTEMPT: {
-        alarm($timeout);
+        
         $response = $ua->get($url);
 
         if ( $response->is_success ) {
 
             #Check the status of the notification submission.
-            alarm(0);
+            
             $self->check_slack_response($response);
             print "Slack response OK.\n";
             return $response;
