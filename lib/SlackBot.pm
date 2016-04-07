@@ -1,15 +1,14 @@
 package SlackBot;
 use strict;
-our $VERSION = 0.1;
+our $VERSION = '0.2';
 
-use subs 'channel';
-use Class::Tiny qw( api_token web_api_url debug username channel mock_url last_err);
 use LWP;
 use URI;
 use Carp;
 use JSON::XS;
 use Data::Dumper;
 use Storable qw(lock_store lock_retrieve);
+use vars qw ($AUTOLOAD);
 
 use constant {
     HTTP_TOO_MANY_REQUESTS => 429,
@@ -19,9 +18,33 @@ use constant {
     STORAGEFILE => '/var/tmp/zbx-slack-temp-storage',
 };
 
-sub BUILDARGS {
+
+sub AUTOLOAD {
+   my $self = shift;
+   my $type = ref ($self) || croak "$self is not an object";
+   my $field = $AUTOLOAD;
+   $field =~ s/.*://;
+   unless (exists $self->{$field})
+   {
+      croak "$field does not exist in object/class $type";
+   }
+   if (@_)
+   {
+      return $self->{$field} = shift;
+   }
+   else
+   {
+      return $self->{$field};
+   }
+}
+
+
+
+sub new {
     my $class       = shift;
     my $args        = shift;
+    
+    
     my $web_api_url = $args->{web_api_url} || 'https://slack.com/api/';
     my $api_token   = $args->{api_token}
       || croak " Failed to create Slack bot - No token provided";
@@ -29,31 +52,31 @@ sub BUILDARGS {
     my $channel = $args->{channel};
 
     my $username = $args->{username};
-    return {
+    
+    my $self = bless {
         api_token   => $api_token,
         web_api_url => $web_api_url,
         debug       => $debug,
         username    => $username,
         channel     => $channel,
-        last_err    => ''
-    };
+        last_err    => '',
+        mock_url    => undef
+    }, $class;
+
+    
+    return $self;
 }
+
 
 sub channel {
     my $self = shift;
     if (@_) {
         my $channel = shift;
-        #<----whats added to default get/set:
         validate_slack_channel($channel);
         return $self->{channel} = $channel;
     }
-    elsif ( exists $self->{channel} ) {
-        return $self->{channel};
-    }
     else {
-        my $defaults =
-          Class::Tiny->get_all_attribute_defaults_for( ref $self );
-        return $self->{channel} = $defaults->{channel}->();
+        return $self->{channel};
     }
 }
 
@@ -82,7 +105,7 @@ sub post_message {
         print "Alarm recovery message!\n";
 
         my $mes_to_replace;
-        my $update_success;
+
         if ( $mes_to_replace = retrieve_from_store( $contents->{eventid} ) )
         {
             print Dumper $mes_to_replace if $self->debug;
@@ -158,7 +181,6 @@ sub chat_postMessage {
         'as_user'     => 'false',)
         );
     }
-    print Dumper \%form_params;
           
     $url->query_form(%form_params);
 
@@ -397,7 +419,8 @@ sub get_with_retries {
     
     if ( defined($self->mock_url) ) { $url = $self->mock_url; }#mock replace: 
     
-    print $url."\n" if ( $self->debug );
+    $ua->show_progress( 1 ) if $self->debug;
+    $response = $ua->get($url);
     
     
     
@@ -440,5 +463,7 @@ sub get_with_retries {
     }
 
 }
+
+sub DESTROY {}
 
 1;
