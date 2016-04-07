@@ -8,7 +8,7 @@ use SlackBot;
 
 
 my %contents;
-my $debug = 0;
+my $debug = 0;my $nofork = 0;
 my ( $api_token, $mode );
 my $username;    # if not defined then default is used
 $contents{mode} =  "alarm";    #default mode
@@ -17,6 +17,7 @@ GetOptions(
     "username=s"  => \$username,
     "api_token=s" => \$api_token,
     "debug"       => \$debug,
+    "nofork"      => \$nofork,
     "mode=s"      => \$contents{mode}
 ) or die("Error in command line arguments\n");
 die "You must provide 'api_token' in config file\n" unless $api_token;
@@ -53,21 +54,22 @@ print "\n";
 
 binmode STDOUT, ":raw";
 
-
-my $pid = fork();
-if( $pid == 0 ){
-   print "This is child process\n";
-         #child
-    die "CANNOT FORK!!\n" unless defined $pid;
-    open(STDOUT, "/dev/null");          # suppressing output  
-    open(STDERR, "/dev/null");          # suppressing output    
-   $slack_bot->post_message( \%contents );
-   exit 0;
+if ($nofork) {$slack_bot->post_message( \%contents );}
+else {
+    my $pid = fork();
+    if( $pid == 0 ){
+        #child
+             
+        die "CANNOT FORK!!\n" unless defined $pid;
+        open(STDOUT, "/dev/null");          # suppressing output  
+        open(STDERR, "/dev/null");          # suppressing output    
+        print "This is child process\n";
+        $slack_bot->post_message( \%contents );
+        exit 0;
+    }
+    print "Forked child ID is $pid\n";
+    exit 0;
 }
-print "This is parent process and child ID is $pid\n";
-print "Parent process is existing\n";
-exit 0;
-
 #######EXTRA SUBS################
 sub parse_message {
     my $message = shift;
