@@ -53,7 +53,20 @@ print "\n";
 
 binmode STDOUT, ":raw";
 
-$slack_bot->post_message( \%contents );
+
+my $pid = fork();
+if( $pid == 0 ){
+   print "This is child process\n";
+         #child
+    die "CANNOT FORK!!\n" unless defined $pid;
+    open(STDOUT, "/dev/null");          # suppressing output  
+    open(STDERR, "/dev/null");          # suppressing output    
+   $slack_bot->post_message( \%contents );
+   exit 0;
+}
+print "This is parent process and child ID is $pid\n";
+print "Parent process is existing\n";
+exit 0;
 
 #######EXTRA SUBS################
 sub parse_message {

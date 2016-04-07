@@ -12,5 +12,4 @@ WriteMakefile(
                      'Test::Simple' => 0.44,
                     },
     EXE_FILES    => ['bin/zbx-slack'],
-#    PREFIX	 => '/root/scripts/notify_scripts/installed_test'
 );
