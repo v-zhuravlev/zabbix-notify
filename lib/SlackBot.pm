@@ -310,21 +310,23 @@ sub store_message {
     my $eventid      = shift;
     my $message      = shift;
     my $storage_file = STORAGEFILE;
-    my $stored;
-
-    if ( -f $storage_file ) {
-
-        $stored = lock_retrieve $storage_file;
-
-    }
-
-    $stored->{$eventid} = {
+    my ($stored,$to_store);
+    
+    $to_store->{$eventid} = {
         ts      => $message->{ts},
         channel => $message->{channel}
     };
-
-    lock_store $stored, $storage_file;
-
+    
+    if ( -f $storage_file ) {
+        $stored = lock_retrieve $storage_file;
+        lock_store { %$stored, %$to_store } , $storage_file;
+    }
+    else {
+        #first time file creation, apply proper file permissions and store only single event
+        lock_store $to_store, $storage_file;
+        chmod 0666, $storage_file;
+    }
+    
 
 }
 
