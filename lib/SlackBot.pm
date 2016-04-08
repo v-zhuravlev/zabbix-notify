@@ -398,7 +398,6 @@ sub get_with_retries {
     if ( defined( $self->mock_url ) ) { $url = $self->mock_url; } #mock replace:
 
     $ua->show_progress(1) if $self->debug;
-    $response = $ua->get($url);
 
   ATTEMPT: {
 
