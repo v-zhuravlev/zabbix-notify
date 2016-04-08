@@ -10,11 +10,10 @@ use SlackBot;
 my %contents;
 my $debug = 0;my $nofork = 0;
 my ( $api_token, $mode );
-my $username;    # if not defined then default is used
+
 $contents{mode} =  "alarm";    #default mode
 $mode = "alarm";   # if not defined then default is used (can be alarm or event)
 GetOptions(
-    "username=s"  => \$username,
     "api_token=s" => \$api_token,
     "debug"       => \$debug,
     "nofork"      => \$nofork,
@@ -24,7 +23,6 @@ die "You must provide 'api_token' in config file\n" unless $api_token;
 die "Invalid mode is provied. Please use 'alarm' or 'event'\n"
   unless $contents{mode} =~ /alarm|event/;
 
-utf8::decode($username);
 
 #get params (from,subject,message from zabbix notification)
 binmode STDOUT, ":encoding(UTF-8)";
@@ -47,7 +45,6 @@ my $slack_bot = SlackBot->new( { api_token => $api_token } );
 
 $slack_bot->debug($debug) if $debug;
 $slack_bot->channel($channel);
-$slack_bot->username($username) if $username;
 
 print Dumper $slack_bot if $debug;
 print "\n";

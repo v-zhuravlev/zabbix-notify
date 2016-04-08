@@ -50,14 +50,11 @@ sub new {
       || croak " Failed to create Slack bot - No token provided";
     my $debug = $args->{debug} || 0;
     my $channel = $args->{channel};
-
-    my $username = $args->{username};
     
     my $self = bless {
         api_token   => $api_token,
         web_api_url => $web_api_url,
         debug       => $debug,
-        username    => $username,
         channel     => $channel,
         last_err    => '',
         mock_url    => undef
@@ -163,26 +160,18 @@ sub chat_postMessage {
          $args->{channel}
       || $self->channel
       || die "Failed to postMessage: channel is required\n";
-    my $username = $args->{username} || $self->username;
       
     my $json_attach = $args->{attachments}
       || die "Failed to postMessage: no attachment is provided\n";
 
     my $url = URI->new( $self->web_api_url . 'chat.postMessage' );
-    my %form_params = (
+          
+    $url->query_form(
         'token'       => $self->api_token,
         'channel'     => $channel,
         'attachments' => $json_attach,
-        'as_user'     => 'true',);
-    
-    if ($username) {
-    %form_params = (%form_params, (
-        'username'    => $username,
-        'as_user'     => 'false',)
-        );
-    }
-          
-    $url->query_form(%form_params);
+        'as_user'     => 'true'
+    );
 
     my $response      = $self->get_with_retries($url);
     my $json_contents = JSON::XS->new->utf8->decode( $response->content );
