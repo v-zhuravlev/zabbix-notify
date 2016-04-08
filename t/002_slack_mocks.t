@@ -36,7 +36,7 @@ like this:
 }
 =cut 
 $slack_bot->mock_url($mock_url);
-my $response = $slack_bot->chat_postMessage( {channel=> 'channel', username => 'username', attachments=> {} });
+my $response = $slack_bot->chat_postMessage( {channel=> 'channel', attachments=> {} });
 ok($response->{ts} eq '1459856086.000002', 'Check ts in response');
 ok($response->{ok} , 'Check ok in response');
 ok($response->{channel} eq 'D0FJXP7L0', 'Check channel in response');
@@ -51,7 +51,7 @@ HTTP 200 OK
 =cut
 $mock_url = 'http://www.mocky.io/v2/5703b37a270000582106afc0';
 $slack_bot->mock_url($mock_url);
-throws_ok { $slack_bot->chat_postMessage( {channel=> 'channel', username => 'username', attachments=> {} }) } '/Error channel_not_found/', 'check wrong channel';
+throws_ok { $slack_bot->chat_postMessage( {channel=> 'channel', attachments=> {} }) } '/Error channel_not_found/', 'check wrong channel';
 
 
 
@@ -65,7 +65,7 @@ HTTP 200 OK
 =cut
 $mock_url = 'http://www.mocky.io/v2/5703b6d52700009b2106afc4';
 $slack_bot->mock_url($mock_url);
-lives_ok { $slack_bot->chat_postMessage( {channel=> 'channel', username => 'username', attachments=> {} }) } 'check wrong username';
+lives_ok { $slack_bot->chat_postMessage( {channel=> 'channel',attachments=> {} }) } 'check message_not_found';
 
 
 
