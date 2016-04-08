@@ -19,6 +19,7 @@ Here is the idea in brief:
 **All:**  
 -	All configuration is done in Zabbix web-interface(no config files anywhere)  
 -	UTF8 supported  
+
 **Slack:**  
 -	Color coding events depending on Trigger Status and Severity  
 -	Recovery message from Zabbix will update and then delete already posted message in Slack (--mode=alarm)  
@@ -57,7 +58,6 @@ The script is written in Perl and you will also need those common modules in ord
 ```
 LWP
 JSON::XS
-Class:Tiny
 ```
 In Debian you can install them by typing:
 ```
