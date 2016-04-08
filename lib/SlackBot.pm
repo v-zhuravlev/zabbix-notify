@@ -1,7 +1,7 @@
 package SlackBot;
 use strict;
 use warnings;
-our $VERSION = '0.2';
+our $VERSION = '0.3';
 
 use LWP;
 use URI;
@@ -15,7 +15,7 @@ use constant { ## no critic(ProhibitConstantPragma)
     HTTP_TOO_MANY_REQUESTS => 429,
     RETRY_DEFAULT          => 2,
     RETRY_WAIT_SECS        => 5,
-    CLEAR_ALARM_AFTER_SECS => 10,
+    CLEAR_ALARM_AFTER_SECS => 30,
     STORAGEFILE            => '/var/tmp/zbx-slack-temp-storage',
 };
 
