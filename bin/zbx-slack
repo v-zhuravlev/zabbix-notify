@@ -1,17 +1,17 @@
-#!/usr/bin/perl -w
-
+#!/usr/bin/perl
+use warnings;
 use strict;
 use 5.010;
 use Data::Dumper;
 use Getopt::Long;
 use SlackBot;
 
-
 my %contents;
-my $debug = 0;my $nofork = 0;
+my $debug  = 0;
+my $nofork = 0;
 my ( $api_token, $mode );
 
-$contents{mode} =  "alarm";    #default mode
+$contents{mode} = "alarm";    #default mode
 $mode = "alarm";   # if not defined then default is used (can be alarm or event)
 GetOptions(
     "api_token=s" => \$api_token,
@@ -22,7 +22,6 @@ GetOptions(
 die "You must provide 'api_token' in config file\n" unless $api_token;
 die "Invalid mode is provied. Please use 'alarm' or 'event'\n"
   unless $contents{mode} =~ /alarm|event/;
-
 
 #get params (from,subject,message from zabbix notification)
 binmode STDOUT, ":encoding(UTF-8)";
@@ -47,19 +46,19 @@ $slack_bot->debug($debug) if $debug;
 $slack_bot->channel($channel);
 
 print Dumper $slack_bot if $debug;
-print "\n";
 
 binmode STDOUT, ":raw";
 
-if ($nofork) {$slack_bot->post_message( \%contents );}
+if ($nofork) { $slack_bot->post_message( \%contents ); }
 else {
     my $pid = fork();
-    if( $pid == 0 ){
+    if ( $pid == 0 ) {
+
         #child
-             
+
         die "CANNOT FORK!!\n" unless defined $pid;
-        open(STDOUT, "/dev/null");          # suppressing output  
-        open(STDERR, "/dev/null");          # suppressing output    
+        open( STDOUT, '>' , "/dev/null" );    # suppressing output
+        open( STDERR, '>' , "/dev/null" );    # suppressing output
         print "This is child process\n";
         $slack_bot->post_message( \%contents );
         exit 0;
