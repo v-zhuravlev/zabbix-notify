@@ -135,7 +135,7 @@ sub post_message {
         print "Alarm message or plain event message!\n";
         my $message =
           $self->chat_postMessage( { attachments => $json_attach } );
-        if ( $contents->{mode} eq 'alarm' ) {
+        if ( $contents->{mode} eq 'alarm' and defined($contents->{eventid})) {
             store_message( $contents->{eventid}, $message );
         }
 
