@@ -59,28 +59,13 @@ The script is written in Perl and you will also need those common modules in ord
 LWP
 JSON::XS
 ```
-In Debian you can install them by typing:
-```
-apt-get install libwww-perl libjson-xs-perl  
-```
-In Centos  you can do it like so:  
-```
-yum install perl-JSON-XS perl-libwww-perl
-```
-or you can install modules from CPAN  
-```
-PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install Bundle::LWP'
-PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install JSON::XS
-```
-or cpanminus (faster):  
-```
-apt-get install cpanminus
-```
-and then  
-```
-cpanm install LWP
-cpanm install JSON::XS
-```
+There are numerous ways to install them:  
+
+| in Debian  | In Centos | using CPAN | using cpanm|  
+|------------|-----------|------------|------------|  
+|  `apt-get install libwww-perl libjson-xs-perl` | `yum install perl-JSON-XS perl-libwww-perl` | `PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install Bundle::LWP'` and  `PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install JSON::XS` | `cpanm install LWP` and `cpanm install JSON::XS`|  
+
+
 Once this is done, download tar and install it into the system:  
 ```
 perl Makefile.PL INSTALLSITESCRIPT=/usr/local/share/zabbix/alertscripts
@@ -167,12 +152,22 @@ Default/recovery subject: anything you like, but I recommend
 ```
 {TRIGGER.STATUS}:{HOSTNAME}:{TRIGGER.NAME}. 
 ```
-Default/recovery message:  
-anything you like, but I recommend:  
+Default message:  
+anything you like, for example:  
 ```
 Host: {HOSTNAME}
 Trigger: {STATUS}: {TRIGGER.NAME}: {TRIGGER.SEVERITY}
-Timestamp: {DATE} {EVENT.TIME}
+Timestamp: {EVENT.DATE} {EVENT.TIME}
+{TRIGGER.COMMENT}
+{TRIGGER.URL}
+{INVENTORY.LOCATION}
+eventid: {EVENT.ID}
+```
+Recovery message:  
+```
+Host: {HOSTNAME}
+Trigger: {STATUS}: {TRIGGER.NAME}: {TRIGGER.SEVERITY}
+Timestamp: {EVENT.RECOVERY.DATE} {EVENT.RECOVERY.TIME}
 {TRIGGER.COMMENT}
 {TRIGGER.URL}
 {INVENTORY.LOCATION}
@@ -182,29 +177,79 @@ Note:  if you place Macros **{TRIGGER.SEVERITY}** and **{STATUS}** then your mes
 Note:  place line `eventid: {EVENT.ID}` if you want to use Alarm mode (which is default)  
 ![image](https://cloud.githubusercontent.com/assets/14870891/14313896/f3edc7e4-fbfc-11e5-842a-2e7410c8d755.png)  
 As an alternative you can place JSON object here that would represent Slack [attachment:](https://api.slack.com/docs/attachments)  
+![image](https://cloud.githubusercontent.com/assets/14870891/14406644/0c820002-feb6-11e5-98e0-6acadad8b7f1.png)  
+
+For TRIGGER transitioning to PROBLEM you might use:
 ```
 {
-            "fallback": "{STATUS} : {HOSTNAME} : {TRIGGER.NAME} fallback",
-            "pretext": "{STATUS} : {HOSTNAME} : {TRIGGER.NAME} appears above the attachment block",
-
-            "title": "{STATUS} : {HOSTNAME} : {TRIGGER.NAME}",
-            "title_link": "URL TO ",
-
-            "text": "{STATUS} eventid: {EVENT.ID} that appears within the attachment",
-
+            "fallback": "{HOST.NAME}:{TRIGGER.NAME}:{STATUS}",
+            "pretext": "New Alarm",
+            "author_name": "{HOST.NAME}",
+            "title": "{TRIGGER.NAME}",
+            "title_link": "http://zabbix/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}",
             "fields": [
                 {
-                    "title": "Priority",
+                    "title": "Status",
+                    "value": "{STATUS}",
+                    "short": true
+                },
+                {
+                    "title": "Severity",
                     "value": "{TRIGGER.SEVERITY}",
-                    "short": false
+                    "short": true
+                },
+                {
+                    "title": "Time",
+                    "value": "{EVENT.DATE} {EVENT.TIME}",
+                    "short": true
+                },
+                {
+                    "title": "EventID",
+                    "value": "eventid: {EVENT.ID}",
+                    "short": true
                 }
-            ],
+                
+                
+            ]
+        }
+```
+And for Recovery:  
+```
+{
+            "fallback": "{HOST.NAME}:{TRIGGER.NAME}:{STATUS}",
+            "pretext": "Cleared",
+            "author_name": "{HOST.NAME}",
+            "title": "{TRIGGER.NAME}",
+            "title_link": "http://zabbux/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.RECOVERY.ID}",
+            "fields": [
+                {
+                    "title": "Status",
+                    "value": "{STATUS}",
+                    "short": true
+                },
+                {
+                    "title": "Severity",
+                    "value": "{TRIGGER.SEVERITY}",
+                    "short": true
+                },
+                {
+                    "title": "Time",
+                    "value": "{EVENT.RECOVERY.DATE} {EVENT.RECOVERY.TIME}",
+                    "short": true
+                },
+                {
+                    "title": "EventID",
+                    "value": "eventid: {EVENT.ID}",
+                    "short": true
+                }
 
-            "image_url": "http://my-website.com/path/to/image.jpg",
-            "thumb_url": "http://example.com/path/to/thumb.png"
-}
+                
+                
+            ]
+        }
 ```
 
+ 
  
 In **Condition** tab do not forget to include **Trigger value = Problem condition**. The rest depends on your needs.  
 ![image](https://cloud.githubusercontent.com/assets/14870891/14313939/2ae4e980-fbfd-11e5-96db-81325b6d40b0.png)
