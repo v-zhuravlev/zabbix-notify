@@ -35,7 +35,7 @@ die "Subject provided is wrong\n"
 $contents{message} = shift @ARGV;
 utf8::decode( $contents{message} );
 die "Message provided is wrong\n"
-  unless $contents{message} =~ m/^( [[:print:]] | \n | \r )+$/x;    #message
+  unless $contents{message} =~ m/^( [[:print:]] | \t | \n | \r )+$/x;    #message
 
 #parse contents to find something interesting (OK|PROBLEM, SEVERITY LEVEL...)
 %contents = ( %contents, parse_message( $contents{message} ) );
