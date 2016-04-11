@@ -178,15 +178,16 @@ Note:  place line `eventid: {EVENT.ID}` if you want to use Alarm mode (which is 
 ![image](https://cloud.githubusercontent.com/assets/14870891/14313896/f3edc7e4-fbfc-11e5-842a-2e7410c8d755.png)  
 As an alternative you can place JSON object here that would represent Slack [attachment:](https://api.slack.com/docs/attachments)  
 ![image](https://cloud.githubusercontent.com/assets/14870891/14406644/0c820002-feb6-11e5-98e0-6acadad8b7f1.png)  
-
+Note though, that it is required to place all Zabbix MACROS in double brackets [[ ]], so they are properly transformed into JSON String.  
 For TRIGGER transitioning to PROBLEM you might use:
 ```
 {
-            "fallback": "{HOST.NAME}:{TRIGGER.NAME}:{STATUS}",
+            "fallback": "[[{HOST.NAME}:{TRIGGER.NAME}:{STATUS}]]",
             "pretext": "New Alarm",
-            "author_name": "{HOST.NAME}",
-            "title": "{TRIGGER.NAME}",
+            "author_name": "[[{HOST.NAME}]]",
+            "title": "[[{TRIGGER.NAME}]]",
             "title_link": "http://zabbix/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}",
+            "text": "[[{TRIGGER.DESCRIPTION}]]",
             "fields": [
                 {
                     "title": "Status",
@@ -216,11 +217,12 @@ For TRIGGER transitioning to PROBLEM you might use:
 And for Recovery:  
 ```
 {
-            "fallback": "{HOST.NAME}:{TRIGGER.NAME}:{STATUS}",
+            "fallback": "[[{HOST.NAME}:{TRIGGER.NAME}:{STATUS}]]",
             "pretext": "Cleared",
-            "author_name": "{HOST.NAME}",
-            "title": "{TRIGGER.NAME}",
+            "author_name": "[[{HOST.NAME}]]",
+            "title": "[[{TRIGGER.NAME}]]",
             "title_link": "http://zabbux/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.RECOVERY.ID}",
+            "text": "[[{TRIGGER.DESCRIPTION}]]",
             "fields": [
                 {
                     "title": "Status",
@@ -241,6 +243,16 @@ And for Recovery:
                     "title": "EventID",
                     "value": "eventid: {EVENT.ID}",
                     "short": true
+                },
+                {
+                    "title": "Event Acknowledgement history",
+                    "value": "[[{EVENT.ACK.HISTORY}]]",
+                    "short": false
+                }, 
+                {
+                    "title": "Escalation history",
+                    "value": "[[{ESC.HISTORY}]]",
+                    "short": false
                 }
 
                 
