@@ -6,27 +6,56 @@ no if $] >= 5.018, warnings => "experimental::smartmatch";
 use Data::Dumper;
 use Getopt::Long;
 use SlackBot;
+use HipChatBot;
+use PagerDutyBot;
 
 my %contents;
 my $debug  = 0;
-my $nofork = 0;
-my ( $api_token, $mode );
+my $fork   = 1;
+my $api_token;
+#slack only
+my $slack;
+$contents{mode} = "alarm";    #default mode in slack
 
-$contents{mode} = "alarm";    #default mode
-$mode = "alarm";   # if not defined then default is used (can be alarm or event)
+#hipchat only
+my $hipchat;
+my $hipchat_api_url;
+$contents{hipchat_message_format}   = 'text';
+$contents{hipchat_notify} = 'true';
+#pd only
+my $pagerduty;
+
+
+
 GetOptions(
-    "api_token=s" => \$api_token,
-    "debug"       => \$debug,
-    "nofork"      => \$nofork,
-    "mode=s"      => \$contents{mode}
+    "api_token=s" =>  \$api_token,
+    "debug!"       => \$debug,
+    "fork!"      =>   \$fork,
+    
+    
+    "hipchat"     =>            \$hipchat,
+    "hipchat_api_url=s" =>         \$hipchat_api_url,
+    "hipchat_message_format=s"         => \$contents{hipchat_message_format},
+    "hipchat_notify=s"       => \$contents{hipchat_notify},
+    "hipchat_from=s"       => \$contents{from},
+
+    "pagerduty"       => \$pagerduty,
+    "pd_client=s"     => \$contents{client},
+    "pd_client_url=s" => \$contents{client_url},
+    
+    "slack"     =>    \$slack,
+    "mode=s"      =>  \$contents{mode},
 ) or die("Error in command line arguments\n");
-die "You must provide 'api_token' in config file\n" unless $api_token;
+die "Please provide --slack --hipchat --pagerduty but only one\n"
+  unless defined($hipchat) xor defined($slack) xor defined($pagerduty);
+die "You must provide 'api_token'\n" unless $api_token;
 die "Invalid mode is provied. Please use 'alarm' or 'event'\n"
   unless $contents{mode} =~ /alarm|event/;
-
+  
+ 
 #get params (from,subject,message from zabbix notification)
 binmode STDOUT, ":encoding(UTF-8)";
-my $channel = shift @ARGV or die "Invalid number of arguments\n";
+my $send_to = shift @ARGV or die "Invalid number of arguments\n";
 
 $contents{subject} = shift @ARGV;
 utf8::decode( $contents{subject} );
@@ -40,17 +69,39 @@ die "Message provided is wrong\n"
 
 #parse contents to find something interesting (OK|PROBLEM, SEVERITY LEVEL...)
 %contents = ( %contents, parse_message( $contents{message} ) );
+my $bot;
+if ($slack) {
+    $bot = SlackBot->new( { api_token => $api_token } );
+    $bot->channel($send_to);
 
-my $slack_bot = SlackBot->new( { api_token => $api_token } );
+}
+elsif ($hipchat) {
+    $bot = HipChatBot->new({ 
+        api_token => $api_token
+        });
+    $bot->hipchat_api_url($hipchat_api_url) if $hipchat_api_url;
+ 
+    $bot->room($send_to);
+    if ( defined($contents{from}) ) {
+        utf8::decode( $contents{from} ); 
+        die "'from' provided is wrong\n"
+            unless $contents{from} =~ m/^[[:print:]]+$/;    #from
+    }
+}
+elsif ($pagerduty) {
 
-$slack_bot->debug($debug) if $debug;
-$slack_bot->channel($channel);
+    $bot = PagerDutyBot->new({api_token => $api_token});
 
-print Dumper $slack_bot if $debug;
+}
 
+$bot->debug($debug) if $debug;
+print Dumper $bot if $debug;
+
+
+print Dumper \%contents if $debug;
 binmode STDOUT, ":raw";
 
-if ($nofork) { $slack_bot->post_message( \%contents ); }
+if (not $fork) { $bot->post_message( \%contents ); }
 else {
     my $pid = fork();
     if ( $pid == 0 ) {
@@ -61,7 +112,7 @@ else {
         open( STDOUT, '>' , "/dev/null" );    # suppressing output
         open( STDERR, '>' , "/dev/null" );    # suppressing output
         print "This is child process\n";
-        $slack_bot->post_message( \%contents );
+        $bot->post_message( \%contents );
         exit 0;
     }
     print "Forked child ID is $pid\n";
@@ -72,21 +123,19 @@ sub parse_message {
     my $message = shift;
     my %result;
     $result{'status'} = 'PROBLEM';
-    given ($message) {    #Valid values: any html code for color
+    given ($message) {   
         when (/eventid: *(\d+)/i) { $result{'eventid'} = $1;        continue }
         when (/\bPROBLEM\b/)      { $result{'status'}  = 'PROBLEM'; continue }
         when (/\bOK\b/) {
             $result{'status'} = 'OK';
-            $result{'color'}  = '#CCFFCC';
         }
-        when (/\bNot classified\b/) { $result{'color'} = '#DBDBDB' }
-        when (/\bInformation\b/)    { $result{'color'} = '#CCFFCC' }
-        when (/\bWarning\b/)        { $result{'color'} = '#FFFFCC' }
-        when (/\bAverage\b/)        { $result{'color'} = '#FFCCCC' }
-        when (/\bHigh\b/)           { $result{'color'} = '#FF9999' }
-        when (/\bDisaster\b/)       { $result{'color'} = '#FF3838' }
-        default                     { $result{'color'} = '#DBDBDB' }
+        when (/\bNot classified\b/) { $result{'severity'} = 'Not classified' }
+        when (/\bInformation\b/)    { $result{'severity'} = 'Information' }
+        when (/\bWarning\b/)        { $result{'severity'} = 'Warning' }
+        when (/\bAverage\b/)        { $result{'severity'} = 'Average' }
+        when (/\bHigh\b/)           { $result{'severity'} = 'High' }
+        when (/\bDisaster\b/)       { $result{'severity'} = 'Disaster' }
+        default                     { $result{'severity'} = 'Not classified' }
     }
     return %result;
 }
-

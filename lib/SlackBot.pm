@@ -2,7 +2,7 @@ package SlackBot;
 use strict;
 use warnings;
 our $VERSION = '0.4';
-
+use parent qw(ZabbixNotify);
 use LWP;
 use URI;
 use Carp;
@@ -86,7 +86,10 @@ sub post_message {
     my $contents = shift
       || die "No contents provided to post into Slack!\n";
 
-    my $json_attach = create_json_if_plain($contents);
+    #prepare color:
+    $contents->{color} = choose_color($contents);
+ 
+    my $json_attach = $self->create_json_if_plain($contents);
     if (    $contents->{status} eq 'OK'
         and $contents->{mode} eq 'alarm'
         and defined( $contents->{eventid} ) )
@@ -347,12 +350,13 @@ like utf8::decode( $contents );
 =cut
 
 sub create_json_if_plain {
+    my $self    = shift;
     my $contents = shift;
     my $json_hash;
     my $json_attach;
     eval {    #check if already JSON:
-        
-        my $message = zbx_macro_to_json($contents->{message});
+    
+        my $message = $self->zbx_macro_to_json($contents->{message});
         $json_hash = JSON::XS->new->decode( $message );
 
     };
@@ -391,41 +395,21 @@ sub create_json_attach_only {
 }
 
 
-=zbx_macro_to_json
-transform everything(zabbix macros) in double squares [[ ]] to json STRING
-note that unicode chars already encoded to \u1234 currently in message when called.
-=cut
-
-sub zbx_macro_to_json {
-     my $message = shift;
-     my $orig ;
-     my $result ;
-            
-        while (  $message =~ /( \[ \[) (.*?) (\] \] ) /gxs) {
-            
-            $orig = $1.$2.$3;
-            $result = $2;
-            print $orig."\n";
-            #order matters
-            utf8::encode( $result);
-            $result =~  s/ \\ /\\\\/xg; #\
-            $result =~  s/ \/ /\\\//xg; #/
-            $result =~  s/ " /\\"/xg; #"
-            $result =~  s/ \n /\\n/xg; #\n
-            $result =~  s/ \r /\\r/xg; #\r
-            $result =~  s/ \x{8} //xg; #backspace
-            $result =~  s/ \x{C} //xg; #formfeed
-            $result =~  s/ \x{9} /    /xg; #horizontal tab
-            utf8::decode( $result);
-                        
-            $orig = quotemeta($orig);
-            
-            $message =~ s/$orig/$result/;
-        }
-        print $message."\n";
-        return $message;
+sub choose_color {
+    
+    my $contents = shift;
+    my $color;
+    if ($contents->{status} eq 'OK') { return '#CCFFCC'; }
+    elsif ($contents->{severity} eq 'Not classified') {return '#DBDBDB';}
+    elsif ($contents->{severity} eq 'Information') {return '#CCFFCC';}
+    elsif ($contents->{severity} eq 'Warning') {return '#FFFFCC';}
+    elsif ($contents->{severity} eq 'Average') {return '#FFCCCC';}
+    elsif ($contents->{severity} eq 'High') {return '#FF9999';}
+    elsif ($contents->{severity} eq 'Disaster') {return '#DBDBDB';}
+    else {return '#DBDBDB';}
 
 }
+
 
 
 sub get_with_retries {
@@ -482,6 +466,9 @@ sub get_with_retries {
     }
 
 }
+
+
+
 
 sub DESTROY { }
 
