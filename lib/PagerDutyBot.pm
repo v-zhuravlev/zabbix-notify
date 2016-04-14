@@ -107,8 +107,15 @@ sub create_json_if_plain {
     }
     else {
         print "message is JSON, going to proceed as with JSON attachment\n";
+        if (   not defined( $json_hash->{service_key} )
+            and exists( $self->{api_token} ) )
+        {
 
-        $json_attach = JSON::XS->new->encode( $json_hash );
+            print "Adding service_key to the JSON payload...\n";
+            $json_hash->{service_key} = $self->{api_token};
+
+        }
+        $json_attach = JSON::XS->new->utf8->encode( $json_hash );
         return $json_attach;
     }
 }

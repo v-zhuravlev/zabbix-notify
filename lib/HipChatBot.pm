@@ -163,7 +163,7 @@ sub create_json_if_plain {
             $json_hash->{color} = $contents->{color};
 
         }
-        $json_attach = JSON::XS->new->encode( $json_hash );
+        $json_attach = JSON::XS->new->utf8->encode( $json_hash );
         return $json_attach;
     }
 }
