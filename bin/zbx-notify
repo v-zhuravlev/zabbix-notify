@@ -116,9 +116,10 @@ else {
         $bot->post_message( \%contents );
         exit 0;
     }
-    print "Forked child ID is $pid\n";
-    exit 0;
+    #print "Forked child ID is $pid\n";
+exit 0;
 }
+
 #######EXTRA SUBS################
 sub parse_message {
     my $message = shift;
