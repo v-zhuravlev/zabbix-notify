@@ -19,6 +19,7 @@ Here is the idea in brief:
 **All:**  
 -	All configuration is done in Zabbix web-interface(no config files anywhere)  
 -	UTF8 supported  
+
 **Slack:**  
 -	Color coding events depending on Trigger Status and Severity  
 -	Recovery message from Zabbix will update and then delete already posted message in Slack (--slack_mode=alarm)  
