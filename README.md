@@ -328,7 +328,7 @@ Here is what you can setup for HipChat:
 | Parameter        | Description                      | Default value  | Example value                           |  
 | ---------------- |:---------------------:|:--------------:|-----------------------------------------|  
 | api_token        |  you bot api token(Mandatory)    | none           |--api_token=5y9zBYM4Htgg4SNrYovMGE1uGvyrUtFOQGHXdK3J|  
-| hipchat_api_url        |  HipChat api url endpoint   | https://api.hipchat.com           |hipchat_api_url=https://192.168.10.0/hipchat|
+| hipchat_api_url        |  HipChat api url endpoint   | https://api.hipchat.com           |--hipchat_api_url=https://192.168.10.0/hipchat|
 | hipchat_message_format        |  text or html(see API documentation)   | text           |--hipchat_message_format=html|  
 | hipchat_notify        |  whether to notify HipChat users on new message arrival   | true           |--hipchat_notify=false|  
 | hipchat_from        |  Additional user name in HipChat   | none           |--hipchat_from='Zabbix NW Instance'|  
@@ -393,7 +393,128 @@ In **Operations** tab select Notification Agent as recipient of the message sent
 
 More on Action configuration in Zabbix can be found  [here:](https://www.zabbix.com/documentation/3.0/manual/config/notifications/action)    
 
-That it is it  
+That it is it again.  
+
+
+# PagerDuty Setup  
+And *finally* PagerDuty. If your team doesn't have the account you can get it [here](https://signup.pagerduty.com/accounts/new)  
+
+Once inside PagerDuty you will need to setup **Services** that will provide you with data. To do this go to **Configuration->Services**:  
+![image](https://cloud.githubusercontent.com/assets/14870891/14526382/88ead7fc-024b-11e6-9025-999f6a477e00.png)
+On the next page choose Zabbix from the list of services and choose a name for your Zabbix installation:
+![image](https://cloud.githubusercontent.com/assets/14870891/14526388/954236a8-024b-11e6-84a6-189e527e01b5.png)
+You will see Service key on the next page: save it somewhere as you will need this in Zabbix.
+
+## Test with PagerDuty 
+Once you have done the previous setp , go back to console and test the script by running it under user Zabbix:  
+```
+root#:su - zabbix
+cd /usr/local/share/zabbix/alertscripts
+```
+
+To ADD ALARM
+```
+zbx-notify pagerduty 'PROBLEM:myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1' \
+'Host: myHOSTNAME
+Trigger: PROBLEM: myHOSTNAME Температуа Failure on DAE5S Bus 1 Enclosure 1: High
+Timestamp: 2016.03.14 11:57:10 eventid: 100502' \
+--api_token=1baff6f955c040d795387e7ab9d62090 \
+--pagerduty --nofork
+```
+To RESOLVE IT
+```
+insert
+```
+
+
+## Zabbix Configuration (PagerDuty)
+Now all is left is to setup new Action and Media Type.  
+### Media type  
+First go to **Administration -> Media Types**, press **Create media type**  
+![image](https://cloud.githubusercontent.com/assets/14870891/14525785/e5c3df72-0247-11e6-9507-d916af3acc16.png)
+Choose Type: *Script*  
+Name: *PagerDuty*  
+Script name: *zbx-notify*  
+Fill **Script parameters** in the following order  
+1: `{ALERT.SENDTO}`  
+2: `{ALERT.SUBJECT}`  
+3: `{ALERT.MESSAGE}`  
+4: `--api_token=you_token_here`  
+5: `--pagerduty`  
+Note that there should be no ticks or quotes after `--api-token=` only the key itself.  
+You may provide additional params as well, by pressing **Add** and filling them in the form:  
+`--param=value`  
+
+Here is what you can setup for PagerDuty:  
+
+| Parameter        | Description                      | Default value  | Example value                           |  
+| ---------------- |:---------------------:|:--------------:|-----------------------------------------|  
+| api_token        |  your Service key(Mandatory)    | none           |--api_token=1baff6f955c040d795387e7ab9d62090|  
+| pagerduty_client        |  Zabbix instance name(only works if both client and client_url are provided)   | none           |--pagerduty_client=Myzabbix |  
+| pagerduty_client_url        |  Zabbix instance name link   | none           | --pagerduty_client_url=http://zabbix.local |  
+| debug        |  For providing debug output, useful when running from command line   |   none         |--debug|  
+| nofork       |  To prevent script from forking on posting to Slack    |   none         |--nofork|  
+
+Press *Add* to finish media type creation.  
+
+### User creation
+As you finish with defining new Media Type for PagerDuty proceed to next step and create impersonal user:  
+Go to **Administration->Users**  press **Create user**:  
+
+**In User tab:**  
+**Alias**: Notification Agent  
+**Groups**: Make sure you add him proper Group Membership so this user has the rights to see new Events (and so notify on them).  
+**Password**: anything complex you like, you will never use it  
+
+**In Media tab:**  
+Create New media:  
+**Type:** PagerDuty  
+**Send to:** PagerDuty  
+
+ 
+### Action creation:
+Create new action (go to **Configuration -> Action** ,choose  **Event source: Triggers** press **Create action**) that is to be send to PagerDuty.  
+Here is the example:  
+In **Action** tab:  
+Default/recovery subject: anything you like, but I recommend  
+```
+insert
+```
+Default message:  
+anything you like, for example:  
+```
+insert here
+```
+Recovery message:  
+```
+insert here
+```
+Note:  if you place Macros **{TRIGGER.SEVERITY}** and **{STATUS}** then your messages in PagerDuty will be color coded.  
+
+As an alternative you can place JSON object here that would represent PagerDuty  
+link  
+Note though, that it is required to place all Zabbix MACROS in double brackets [[ ]], so they are properly transformed into JSON String.  
+For TRIGGER transitioning to PROBLEM you might use:  
+```
+insert json example
+```
+And for Recovery:  
+```
+insert JSON example
+```
+
+ 
+ 
+In **Condition** tab do not forget to include **Trigger value = Problem condition**. The rest depends on your needs.  
+![image](https://cloud.githubusercontent.com/assets/14870891/14313939/2ae4e980-fbfd-11e5-96db-81325b6d40b0.png)
+ 
+In **Operations** tab select Notification Agent as recipient of the message sent via PagerDuty.  
+![image](https://cloud.githubusercontent.com/assets/14870891/14314053/d123e30a-fbfd-11e5-8717-74113151b4da.png)  
+
+More on Action configuration in Zabbix can be found  [here:](https://www.zabbix.com/documentation/3.0/manual/config/notifications/action)    
+
+
+
 
 # Troubleshooting
 In order to troubleshoot problems, try to send test message from the command line under user `zabbix`.  
