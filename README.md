@@ -361,30 +361,33 @@ Here is the example:
 In **Action** tab:  
 Default/recovery subject: anything you like, but I recommend  
 ```
-insert
+{STATUS} : {HOSTNAME} : {TRIGGER.NAME}
 ```
 Default message:  
 anything you like, for example:  
 ```
-insert here
+{TRIGGER.DESCRIPTION}
+Status: {STATUS}
+Severity: {TRIGGER.SEVERITY}
+Timestamp: {EVENT.DATE} {EVENT.TIME}
+eventid: {EVENT.ID}
 ```
 Recovery message:  
 ```
-insert here
+{TRIGGER.DESCRIPTION}
+Status: {STATUS}
+Severity: {TRIGGER.SEVERITY}
+Timestamp: {EVENT.DATE} {EVENT.TIME}
+eventid: {EVENT.ID}
+Event Acknowledgement history: {EVENT.ACK.HISTORY}
+Escalation history: {ESC.HISTORY}
 ```
+
 Note:  if you place Macros **{TRIGGER.SEVERITY}** and **{STATUS}** then your messages in HipChat will be color coded.  
 
 As an alternative you can place JSON object here that would represent HipChat  
-link  
+See send_room_notification [API](https://www.hipchat.com/docs/apiv2/method/send_room_notification).  
 Note though, that it is required to place all Zabbix MACROS in double brackets [[ ]], so they are properly transformed into JSON String.  
-For TRIGGER transitioning to PROBLEM you might use:  
-```
-insert json example
-```
-And for Recovery:  
-```
-insert JSON example
-```
 
  
  
@@ -392,7 +395,8 @@ In **Condition** tab do not forget to include **Trigger value = Problem conditio
 ![image](https://cloud.githubusercontent.com/assets/14870891/14313939/2ae4e980-fbfd-11e5-96db-81325b6d40b0.png)
  
 In **Operations** tab select Notification Agent as recipient of the message sent via HipChat.  
-![image](https://cloud.githubusercontent.com/assets/14870891/14314053/d123e30a-fbfd-11e5-8717-74113151b4da.png)  
+![image](https://cloud.githubusercontent.com/assets/14870891/14532200/e5b21abe-0268-11e6-9ee8-b1b0244a58d6.png)  
+
 
 More on Action configuration in Zabbix can be found  [here:](https://www.zabbix.com/documentation/3.0/manual/config/notifications/action)    
 
@@ -415,7 +419,7 @@ root#:su - zabbix
 cd /usr/local/share/zabbix/alertscripts
 ```
 
-To ADD ALARM
+To ADD ALARM  
 ```
 zbx-notify pagerduty 'PROBLEM:myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1' \
 'Host: myHOSTNAME
@@ -424,9 +428,14 @@ Timestamp: 2016.03.14 11:57:10 eventid: 100502' \
 --api_token=1baff6f955c040d795387e7ab9d62090 \
 --pagerduty --nofork
 ```
-To RESOLVE IT
+To RESOLVE IT  
 ```
-insert
+zbx-notify pagerduty 'OK:myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1' \
+'Host: myHOSTNAME
+Trigger: OK: myHOSTNAME Температуа Failure on DAE5S Bus 1 Enclosure 1: High
+Timestamp: 2016.03.14 11:57:10 eventid: 100502' \
+--api_token=1baff6f955c040d795387e7ab9d62090 \
+--pagerduty --nofork
 ```
 
 
@@ -483,20 +492,30 @@ Here is the example:
 In **Action** tab:  
 Default/recovery subject: anything you like, but I recommend  
 ```
-insert
+{STATUS} : {HOSTNAME} : {TRIGGER.NAME}
 ```
 Default message:  
 anything you like, for example:  
 ```
-insert here
+{TRIGGER.DESCRIPTION}
+Status: {STATUS}
+Severity: {TRIGGER.SEVERITY}
+Timestamp: {EVENT.DATE} {EVENT.TIME}
+eventid: {EVENT.ID}
 ```
 Recovery message:  
 ```
-insert here
+{TRIGGER.DESCRIPTION}
+Status: {STATUS}
+Severity: {TRIGGER.SEVERITY}
+Timestamp: {EVENT.DATE} {EVENT.TIME}
+eventid: {EVENT.ID}
+Event Acknowledgement history: {EVENT.ACK.HISTORY}
+Escalation history: {ESC.HISTORY}
 ```
 
 As an alternative you can place JSON object here that would represent PagerDuty  
-link  
+See PagerDuty API  [here](https://developer.pagerduty.com/documentation/integration/events/trigger)  and [here](https://developer.pagerduty.com/documentation/integration/events/resolve).  
 Note though, that it is required to place all Zabbix MACROS in double brackets [[ ]], so they are properly transformed into JSON String.  
 For TRIGGER transitioning to PROBLEM you might use(Default Message):  
 ```
@@ -547,7 +566,7 @@ In **Condition** tab do not forget to include **Trigger value = Problem conditio
 ![image](https://cloud.githubusercontent.com/assets/14870891/14313939/2ae4e980-fbfd-11e5-96db-81325b6d40b0.png)
  
 In **Operations** tab select Notification Agent as recipient of the message sent via PagerDuty.  
-![image](https://cloud.githubusercontent.com/assets/14870891/14314053/d123e30a-fbfd-11e5-8717-74113151b4da.png)  
+![image](https://cloud.githubusercontent.com/assets/14870891/14532236/0ef4ea8c-0269-11e6-8315-a711dda53506.png)  
 
 More on Action configuration in Zabbix can be found  [here:](https://www.zabbix.com/documentation/3.0/manual/config/notifications/action)    
 
