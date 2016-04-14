@@ -9,7 +9,6 @@ use Carp;
 use JSON::XS;
 use Data::Dumper;
 use Storable qw(lock_store lock_retrieve);
-use vars qw ($AUTOLOAD);
 
 use constant { ## no critic(ProhibitConstantPragma)
     HTTP_TOO_MANY_REQUESTS => 429,
@@ -18,22 +17,6 @@ use constant { ## no critic(ProhibitConstantPragma)
     CLEAR_ALARM_AFTER_SECS => 30,
     STORAGEFILE            => '/var/tmp/zbx-slack-temp-storage',
 };
-
-sub AUTOLOAD {
-    my $self  = shift;
-    my $type  = ref($self) || croak "$self is not an object";
-    my $field = $AUTOLOAD;
-    $field =~ s/.*://;
-    unless ( exists $self->{$field} ) {
-        croak "$field does not exist in object/class $type";
-    }
-    if (@_) {
-        return $self->{$field} = shift;
-    }
-    else {
-        return $self->{$field};
-    }
-}
 
 sub new {
     my $class = shift;
@@ -225,44 +208,6 @@ sub chat_deleteMessage {
 
 }
 
-=search_message
-not used
-=cut
-
-sub search_message {
-
-    my $self = shift;
-    my $args = shift;
-
-    my $query = $args->{query}
-      || die "Failed to search for message: please provide a query\n";
-
-    my $url = URI->new( $self->web_api_url . 'search.messages' );
-    $url->query_form(
-        'token'    => $self->api_token,
-        'query'    => q{"} . $query . q{"},
-        'sort'     => 'timestamp',
-        'sort_dir' => 'desc'
-    );
-
-    my @resp;    #array to store messages ids
-    my $response = $self->get_with_retries($url);
-    my $json_resp =
-      JSON::XS->new->utf8->decode( $response->content )->{'messages'}
-      ->{'matches'};
-
-    foreach my $message ( @{$json_resp} ) {
-
-        push @resp,
-          {
-            'ts'      => $message->{'ts'},
-            'channel' => $message->{'channel'}->{'id'}
-          };
-    }
-
-    return @resp;
-
-}
 
 sub check_slack_response {
     my $self     = shift;

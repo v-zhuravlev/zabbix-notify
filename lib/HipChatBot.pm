@@ -8,7 +8,6 @@ use URI;
 use Carp;
 use JSON::XS;
 use Data::Dumper;
-use vars qw ($AUTOLOAD);
 use English '-no_match_vars';
 
 use constant { ## no critic(ProhibitConstantPragma)
@@ -20,21 +19,7 @@ use constant { ## no critic(ProhibitConstantPragma)
     RETRY_WAIT_SECS        => 5,
 };
 
-sub AUTOLOAD {
-    my $self  = shift;
-    my $type  = ref($self) || croak "$self is not an object";
-    my $field = $AUTOLOAD;
-    $field =~ s/.*://;
-    unless ( exists $self->{$field} ) {
-        croak "$field does not exist in object/class $type";
-    }
-    if (@_) {
-        return $self->{$field} = shift;
-    }
-    else {
-        return $self->{$field};
-    }
-}
+
 
 sub new {
     my $class = shift;
