@@ -2,6 +2,9 @@ MANIFEST
 LICENSE
 Makefile.PL
 lib/SlackBot.pm
-bin/zbx-slack
+lib/HipChatBot.pm
+lib/PagerDutyBot.pm
+lib/ZabbixNotify.pm
+bin/zbx-notify
 t/001_load.t
 t/002_slack_mocks.t

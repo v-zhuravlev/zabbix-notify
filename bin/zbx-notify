@@ -1,0 +1,143 @@
+#!/usr/bin/perl
+use warnings;
+use strict;
+use 5.010;
+no if $] >= 5.018, warnings => "experimental::smartmatch";
+use Data::Dumper;
+use Getopt::Long;
+use SlackBot;
+use HipChatBot;
+use PagerDutyBot;
+
+my %contents;
+my $debug  = 0;
+my $fork   = 1;
+my $api_token;
+#slack only
+my $slack;
+$contents{slack}->{mode} = "alarm";    #default mode in slack
+
+#hipchat only
+my $hipchat;
+my $hipchat_api_url;
+$contents{hipchat}->{message_format}   = 'text';
+$contents{hipchat}->{notify} = 'true';
+#pd only
+my $pagerduty;
+
+
+
+GetOptions(
+    "api_token=s" =>  \$api_token,
+    "debug!"       => \$debug,
+    "fork!"      =>   \$fork,
+    
+    
+    "hipchat"     =>            \$hipchat,
+    "hipchat_api_url=s" =>         \$hipchat_api_url,
+    "hipchat_message_format=s"         => \$contents{hipchat}->{message_format},
+    "hipchat_notify=s"       => \$contents{hipchat}->{notify},
+    "hipchat_from=s"       => \$contents{hipchat}->{from},
+
+    "pagerduty"       => \$pagerduty,
+    "pagerduty_client=s"     => \$contents{pagerduty}->{client},
+    "pagerduty_client_url=s" => \$contents{pagerduty}->{client_url},
+    
+    "slack"     =>    \$slack,
+    "slack_mode=s"      =>  \$contents{slack}->{mode},
+) or die("Error in command line arguments\n");
+die "Please provide --slack --hipchat --pagerduty but only one\n"
+  unless defined($hipchat) xor defined($slack) xor defined($pagerduty);
+die "You must provide 'api_token'\n" unless $api_token;
+
+  
+ 
+#get params (from,subject,message from zabbix notification)
+binmode STDOUT, ":encoding(UTF-8)";
+my $send_to = shift @ARGV or die "Invalid number of arguments\n";
+
+$contents{subject} = shift @ARGV;
+utf8::decode( $contents{subject} );
+die "Subject provided is wrong\n"
+  unless $contents{subject} =~ m/^[[:print:]]+$/;    #subject
+
+$contents{message} = shift @ARGV;
+utf8::decode( $contents{message} );
+die "Message provided is wrong\n"
+  unless $contents{message} =~ m/^( [[:print:]] | \t | \n | \r )+$/x;    #message
+
+#parse contents to find something interesting (OK|PROBLEM, SEVERITY LEVEL...)
+%contents = ( %contents, parse_message( $contents{message} ) );
+my $bot;
+if ($slack) {
+    die "Invalid slack_mode is provied. Please use 'alarm' or 'event'\n"
+        unless $contents{slack}->{mode} =~ /^(alarm|event)$/;
+    $bot = SlackBot->new( { api_token => $api_token } );
+    $bot->channel($send_to);
+
+}
+elsif ($hipchat) {
+    $bot = HipChatBot->new({ 
+        api_token => $api_token
+        });
+    $bot->web_api_url($hipchat_api_url) if $hipchat_api_url;
+ 
+    $bot->room($send_to);
+    if ( defined($contents{hipchat}->{from}) ) {
+        utf8::decode( $contents{hipchat}->{from} ); 
+        die "'from' provided is wrong\n"
+            unless $contents{hipchat}->{from} =~ m/^[[:print:]]+$/;    #from
+    }
+}
+elsif ($pagerduty) {
+
+    $bot = PagerDutyBot->new({api_token => $api_token});
+
+}
+
+$bot->debug($debug) if $debug;
+print Dumper $bot if $debug;
+
+
+print Dumper \%contents if $debug;
+binmode STDOUT, ":raw";
+
+if (not $fork) { $bot->post_message( \%contents ); }
+else {
+    my $pid = fork();
+    if ( $pid == 0 ) {
+
+        #child
+
+        die "CANNOT FORK!!\n" unless defined $pid;
+        open( STDOUT, '>' , "/dev/null" );    # suppressing output
+        open( STDERR, '>' , "/dev/null" );    # suppressing output
+        print "This is child process\n";
+        $bot->post_message( \%contents );
+        exit 0;
+    }
+    #print "Forked child ID is $pid\n";
+exit 0;
+}
+
+#######EXTRA SUBS################
+sub parse_message {
+    my $message = shift;
+    my %result;
+    $result{'status'} = 'PROBLEM';
+    given ($message) {   
+        when (/eventid: *(\d+)/i) { $result{'eventid'} = $1;        continue }
+        when (/\bPROBLEM\b/)      { $result{'status'}  = 'PROBLEM'; continue }
+        when (/\bOK\b/) {
+            $result{'status'} = 'OK';
+        }
+        when (/\bNot classified\b/) { $result{'severity'} = 'Not classified' }
+        when (/\bInformation\b/)    { $result{'severity'} = 'Information' }
+        when (/\bWarning\b/)        { $result{'severity'} = 'Warning' }
+        when (/\bAverage\b/)        { $result{'severity'} = 'Average' }
+        when (/\bHigh\b/)           { $result{'severity'} = 'High' }
+        when (/\bDisaster\b/)       { $result{'severity'} = 'Disaster' }
+        default                     { $result{'severity'} = 'Not classified' }
+    }
+    return %result;
+}

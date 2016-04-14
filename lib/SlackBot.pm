@@ -1,39 +1,22 @@
 package SlackBot;
 use strict;
 use warnings;
-our $VERSION = '0.4';
-
+our $VERSION = '0.5';
+use parent qw(ZabbixNotify);
 use LWP;
 use URI;
 use Carp;
 use JSON::XS;
 use Data::Dumper;
 use Storable qw(lock_store lock_retrieve);
-use vars qw ($AUTOLOAD);
 
 use constant { ## no critic(ProhibitConstantPragma)
+    CLEAR_ALARM_AFTER_SECS => 30,
+    STORAGEFILE            => '/var/tmp/zbx-slack-temp-storage',
     HTTP_TOO_MANY_REQUESTS => 429,
     RETRY_DEFAULT          => 2,
     RETRY_WAIT_SECS        => 5,
-    CLEAR_ALARM_AFTER_SECS => 30,
-    STORAGEFILE            => '/var/tmp/zbx-slack-temp-storage',
 };
-
-sub AUTOLOAD {
-    my $self  = shift;
-    my $type  = ref($self) || croak "$self is not an object";
-    my $field = $AUTOLOAD;
-    $field =~ s/.*://;
-    unless ( exists $self->{$field} ) {
-        croak "$field does not exist in object/class $type";
-    }
-    if (@_) {
-        return $self->{$field} = shift;
-    }
-    else {
-        return $self->{$field};
-    }
-}
 
 sub new {
     my $class = shift;
@@ -86,9 +69,12 @@ sub post_message {
     my $contents = shift
       || die "No contents provided to post into Slack!\n";
 
-    my $json_attach = create_json_if_plain($contents);
+    #prepare color:
+    $contents->{color} = choose_color($contents);
+ 
+    my $json_attach = $self->create_json_if_plain($contents);
     if (    $contents->{status} eq 'OK'
-        and $contents->{mode} eq 'alarm'
+        and $contents->{slack}->{mode} eq 'alarm'
         and defined( $contents->{eventid} ) )
     {
         print "Alarm recovery message!\n";
@@ -135,7 +121,7 @@ sub post_message {
         print "Alarm message or plain event message!\n";
         my $message =
           $self->chat_postMessage( { attachments => $json_attach } );
-        if ( $contents->{mode} eq 'alarm' and defined($contents->{eventid})) {
+        if ( $contents->{slack}->{mode} eq 'alarm' and defined($contents->{eventid})) {
             store_message( $contents->{eventid}, $message );
         }
 
@@ -222,44 +208,6 @@ sub chat_deleteMessage {
 
 }
 
-=search_message
-not used
-=cut
-
-sub search_message {
-
-    my $self = shift;
-    my $args = shift;
-
-    my $query = $args->{query}
-      || die "Failed to search for message: please provide a query\n";
-
-    my $url = URI->new( $self->web_api_url . 'search.messages' );
-    $url->query_form(
-        'token'    => $self->api_token,
-        'query'    => q{"} . $query . q{"},
-        'sort'     => 'timestamp',
-        'sort_dir' => 'desc'
-    );
-
-    my @resp;    #array to store messages ids
-    my $response = $self->get_with_retries($url);
-    my $json_resp =
-      JSON::XS->new->utf8->decode( $response->content )->{'messages'}
-      ->{'matches'};
-
-    foreach my $message ( @{$json_resp} ) {
-
-        push @resp,
-          {
-            'ts'      => $message->{'ts'},
-            'channel' => $message->{'channel'}->{'id'}
-          };
-    }
-
-    return @resp;
-
-}
 
 sub check_slack_response {
     my $self     = shift;
@@ -347,12 +295,13 @@ like utf8::decode( $contents );
 =cut
 
 sub create_json_if_plain {
+    my $self    = shift;
     my $contents = shift;
     my $json_hash;
     my $json_attach;
     eval {    #check if already JSON:
-        
-        my $message = zbx_macro_to_json($contents->{message});
+    
+        my $message = $self->zbx_macro_to_json($contents->{message});
         $json_hash = JSON::XS->new->decode( $message );
 
     };
@@ -371,7 +320,7 @@ sub create_json_if_plain {
             $json_hash->{color} = $contents->{color};
 
         }
-        $json_attach = JSON::XS->new->encode( [$json_hash] );
+        $json_attach = JSON::XS->new->utf8->encode( [$json_hash] );
         return $json_attach;
     }
 }
@@ -391,41 +340,21 @@ sub create_json_attach_only {
 }
 
 
-=zbx_macro_to_json
-transform everything(zabbix macros) in double squares [[ ]] to json STRING
-note that unicode chars already encoded to \u1234 currently in message when called.
-=cut
-
-sub zbx_macro_to_json {
-     my $message = shift;
-     my $orig ;
-     my $result ;
-            
-        while (  $message =~ /( \[ \[) (.*?) (\] \] ) /gxs) {
-            
-            $orig = $1.$2.$3;
-            $result = $2;
-            print $orig."\n";
-            #order matters
-            utf8::encode( $result);
-            $result =~  s/ \\ /\\\\/xg; #\
-            $result =~  s/ \/ /\\\//xg; #/
-            $result =~  s/ " /\\"/xg; #"
-            $result =~  s/ \n /\\n/xg; #\n
-            $result =~  s/ \r /\\r/xg; #\r
-            $result =~  s/ \x{8} //xg; #backspace
-            $result =~  s/ \x{C} //xg; #formfeed
-            $result =~  s/ \x{9} /    /xg; #horizontal tab
-            utf8::decode( $result);
-                        
-            $orig = quotemeta($orig);
-            
-            $message =~ s/$orig/$result/;
-        }
-        print $message."\n";
-        return $message;
+sub choose_color {
+    
+    my $contents = shift;
+    my $color;
+    if ($contents->{status} eq 'OK') { return '#CCFFCC'; }
+    elsif ($contents->{severity} eq 'Not classified') {return '#DBDBDB';}
+    elsif ($contents->{severity} eq 'Information') {return '#CCFFCC';}
+    elsif ($contents->{severity} eq 'Warning') {return '#FFFFCC';}
+    elsif ($contents->{severity} eq 'Average') {return '#FFCCCC';}
+    elsif ($contents->{severity} eq 'High') {return '#FF9999';}
+    elsif ($contents->{severity} eq 'Disaster') {return '#DBDBDB';}
+    else {return '#DBDBDB';}
 
 }
+
 
 
 sub get_with_retries {
@@ -482,6 +411,9 @@ sub get_with_retries {
     }
 
 }
+
+
+
 
 sub DESTROY { }
 
