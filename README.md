@@ -494,7 +494,6 @@ Recovery message:
 ```
 insert here
 ```
-Note:  if you place Macros **{TRIGGER.SEVERITY}** and **{STATUS}** then your messages in PagerDuty will be color coded.  
 
 As an alternative you can place JSON object here that would represent PagerDuty  
 link  
