@@ -498,15 +498,49 @@ insert here
 As an alternative you can place JSON object here that would represent PagerDuty  
 link  
 Note though, that it is required to place all Zabbix MACROS in double brackets [[ ]], so they are properly transformed into JSON String.  
-For TRIGGER transitioning to PROBLEM you might use:  
+For TRIGGER transitioning to PROBLEM you might use(Default Message):  
 ```
-insert json example
+{    
+      
+      "incident_key": "{EVENT.ID}",
+      "event_type": "trigger",
+      "description": "[[{TRIGGER.NAME}]]",
+      "client": "Zabbix Monitoring system",
+      "client_url": "http://zabbix",
+      "details": {
+        "Status": "[[{STATUS}]]",
+        "Timestamp": "[[{EVENT.DATE} {EVENT.TIME}]]",
+        "Hostname": "[[{HOST.NAME}]]",
+        "Severity": "[[{TRIGGER.SEVERITY}]]",
+        "Description": "[[{TRIGGER.DESCRIPTION}]]",
+        "IP": "[[{HOST.IP}]]"
+      },
+      "contexts":[ 
+        {
+          "type": "link",
+          "href": "http://zabbix/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}",
+          "text": "View Event details in Zabbix"
+        }
+      ]
+    }
 ```
 And for Recovery:  
 ```
-insert JSON example
+{
+    "incident_key": "{EVENT.ID}",
+    "event_type": "resolve",
+    "description": "[[{TRIGGER.NAME}]]",
+    "details": {
+        "Status": "[[{STATUS}]]",
+        "Timestamp": "[[{EVENT.RECOVERY.DATE} {EVENT.RECOVERY.TIME}]]",
+        "Event Acknowledgement history: ": "[[{EVENT.ACK.HISTORY}]]",
+        "Escalation history:": "[[{ESC.HISTORY}]]"
+    }
+}
 ```
+**Note**: do not insert `"service_key": "key"` in JSON, it is appended automatically.  
 
+![image](https://cloud.githubusercontent.com/assets/14870891/14530924/cf05cac2-0263-11e6-9aef-25ed525bb46e.png)  
  
  
 In **Condition** tab do not forget to include **Trigger value = Problem condition**. The rest depends on your needs.  
