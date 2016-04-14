@@ -103,7 +103,7 @@ Timestamp: 2016.03.14 11:57:10 YEKT eventid: 100502' --api_token=your_token_here
 Now all is left is to setup new Action and Media Type.  
 ### Media type  
 First go to **Administration -> Media Types**, press **Create media type**  
-![image](https://cloud.githubusercontent.com/assets/14870891/14525824/0d6aca04-0248-11e6-8131-68ec8544e0fd.png)  
+![image](https://cloud.githubusercontent.com/assets/14870891/14527463/ddb8a6c2-0252-11e6-9f24-97b80a01539b.png)  
 Choose Type: *Script*  
 Name: *Slack*  
 Script name: *zbx-notify*  
@@ -142,7 +142,8 @@ Go to **Administration->Users**  press **Create user**:
 Create New media:  
 **Type:** Slack  
 **Send to:** Place your Slack #channel name here for example #zabbix.  
-![image](https://cloud.githubusercontent.com/assets/14870891/14313361/e3a86ed2-fbf9-11e5-87e9-515212f4ded8.png)
+![image](https://cloud.githubusercontent.com/assets/14870891/14527650/145abfac-0254-11e6-8875-ec42aff616b4.png)  
+
 
 
 Note You can also define new media for real Zabbix users: use their Slack name in 'Send to'  preceded by @ (for example @bob). In that case this users can be notified by Direct Message as well.  
@@ -309,9 +310,9 @@ Timestamp: 2016.03.14 11:57:10 eventid: 100502' \
 Now all is left is to setup new Action and Media Type.  
 ### Media type  
 First go to **Administration -> Media Types**, press **Create media type**  
-![image](https://cloud.githubusercontent.com/assets/14870891/14525785/e5c3df72-0247-11e6-9507-d916af3acc16.png)
+![image](https://cloud.githubusercontent.com/assets/14870891/14527483/08648d8c-0253-11e6-810b-94e1e9a5a179.png)  
 Choose Type: *Script*  
-Name: *Slack*  
+Name: *HipChat*  
 Script name: *zbx-notify*  
 Fill **Script parameters** in the following order  
 1: `{ALERT.SENDTO}`  
@@ -345,11 +346,13 @@ Go to **Administration->Users**  press **Create user**:
 **Alias**: Notification Agent  
 **Groups**: Make sure you add him proper Group Membership so this user has the rights to see new Events (and so notify on them).  
 **Password**: anything complex you like, you will never use it  
+![image](https://cloud.githubusercontent.com/assets/14870891/14313150/9eacdc1a-fbf8-11e5-9bbd-6ed239d0c599.png)  
 
 **In Media tab:**  
 Create New media:  
 **Type:** HipChat  
 **Send to:** Place your HipChat room name here for example **Zbx-test**.  
+![image](https://cloud.githubusercontent.com/assets/14870891/14527732/a214b26c-0254-11e6-9feb-ffcbfca3d402.png)  
 
  
 ### Action creation:
@@ -431,7 +434,7 @@ insert
 Now all is left is to setup new Action and Media Type.  
 ### Media type  
 First go to **Administration -> Media Types**, press **Create media type**  
-![image](https://cloud.githubusercontent.com/assets/14870891/14525785/e5c3df72-0247-11e6-9507-d916af3acc16.png)
+![image](https://cloud.githubusercontent.com/assets/14870891/14527515/4040725c-0253-11e6-9a38-f529c9c7c38f.png)  
 Choose Type: *Script*  
 Name: *PagerDuty*  
 Script name: *zbx-notify*  
@@ -465,11 +468,13 @@ Go to **Administration->Users**  press **Create user**:
 **Alias**: Notification Agent  
 **Groups**: Make sure you add him proper Group Membership so this user has the rights to see new Events (and so notify on them).  
 **Password**: anything complex you like, you will never use it  
+![image](https://cloud.githubusercontent.com/assets/14870891/14313150/9eacdc1a-fbf8-11e5-9bbd-6ed239d0c599.png)  
 
 **In Media tab:**  
 Create New media:  
 **Type:** PagerDuty  
 **Send to:** PagerDuty  
+![image](https://cloud.githubusercontent.com/assets/14870891/14527875/47ffeb06-0255-11e6-9611-22ca3dc38f5a.png)  
 
  
 ### Action creation:
