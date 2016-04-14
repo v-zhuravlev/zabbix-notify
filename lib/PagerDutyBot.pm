@@ -1,7 +1,7 @@
 package PagerDutyBot;
 use strict;
 use warnings;
-our $VERSION = '0.4';
+our $VERSION = '0.5';
 use parent 'ZabbixNotify';
 use LWP;
 use URI;
@@ -131,11 +131,11 @@ sub create_json {
     }
     
     
-    if (   defined $contents_ref->{client_url}
-        and defined $contents_ref->{client} )
+    if (   defined $contents_ref->{pagerduty}->{client_url}
+        and defined $contents_ref->{pagerduty}->{client} )
     {
-        $json_text->{client_url} = $contents_ref->{client_url};
-        $json_text->{client}     = $contents_ref->{client};
+        $json_text->{client_url} = $contents_ref->{pagerduty}->{client_url};
+        $json_text->{client}     = $contents_ref->{pagerduty}->{client};
     }
     
     return JSON::XS->new->utf8->encode($json_text);

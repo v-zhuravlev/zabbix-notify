@@ -1,7 +1,7 @@
 package HipChatBot;
 use strict;
 use warnings;
-our $VERSION = '0.4';
+our $VERSION = '0.5';
 use parent 'ZabbixNotify';
 use LWP;
 use URI;
@@ -85,7 +85,6 @@ sub post_message {
     my $contents = shift
       || die "No contents provided to post into Hipchat!\n";
 
-    #prepare color:
     $contents->{color} = choose_color($contents);
     
     my $json_content = $self->create_json_if_plain($contents);
@@ -112,8 +111,6 @@ sub room_notification {
 
       
 }
-
-
 
 
 
@@ -167,17 +164,15 @@ sub create_json {
     my $json_hash =      {
             color          => $contents->{color},
             message        => $contents->{message},
-            message_format => $contents->{hipchat_message_format},
-            notify         => $contents->{hipchat_notify},
+            message_format => $contents->{hipchat}->{message_format},
+            notify         => $contents->{hipchat}->{notify},
         };
-    if (defined($contents->{from})) {
-        if ( not validate_hipchat_from_length( $contents->{from} ) ) {
+    if (defined($contents->{hipchat}->{from})) {
+        if ( not validate_hipchat_from_length( $contents->{hipchat}->{from} ) ) {
             warn "'from' is too long. Have to cut it down\n";
-            $contents->{from} = substr $contents->{from}, 0, MAX_HIPCHAT_FROM_LENGTH;
+            $contents->{hipchat}->{from} = substr $contents->{hipchat}->{from}, 0, MAX_HIPCHAT_FROM_LENGTH;
         }
-        
-        $json_hash->{from}=$contents->{from};
-        
+        $json_hash->{from}=$contents->{hipchat}->{from};
     }
     
     

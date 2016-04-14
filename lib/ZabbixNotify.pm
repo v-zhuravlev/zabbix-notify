@@ -1,15 +1,32 @@
 package ZabbixNotify;
 use strict;
 use warnings;
-our $VERSION = '0.4';
+our $VERSION = '0.5';
 
 use Carp;
-use JSON::XS;
 use Data::Dumper;
-
+use vars qw ($AUTOLOAD);
 use constant { ## no critic(ProhibitConstantPragma)
-    STORAGEFILE            => '/var/tmp/zbx-slack-temp-storage',
+    HTTP_TOO_MANY_REQUESTS => 429,
+    RETRY_DEFAULT          => 2,
+    RETRY_WAIT_SECS        => 5,
 };
+
+sub AUTOLOAD {
+    my $self  = shift;
+    my $type  = ref($self) || croak "$self is not an object";
+    my $field = $AUTOLOAD;
+    $field =~ s/.*://;
+    unless ( exists $self->{$field} ) {
+        croak "$field does not exist in object/class $type";
+    }
+    if (@_) {
+        return $self->{$field} = shift;
+    }
+    else {
+        return $self->{$field};
+    }
+}
 
 
 =zbx_macro_to_json

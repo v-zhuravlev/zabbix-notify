@@ -15,13 +15,13 @@ my $fork   = 1;
 my $api_token;
 #slack only
 my $slack;
-$contents{mode} = "alarm";    #default mode in slack
+$contents{slack}->{mode} = "alarm";    #default mode in slack
 
 #hipchat only
 my $hipchat;
 my $hipchat_api_url;
-$contents{hipchat_message_format}   = 'text';
-$contents{hipchat_notify} = 'true';
+$contents{hipchat}->{message_format}   = 'text';
+$contents{hipchat}->{notify} = 'true';
 #pd only
 my $pagerduty;
 
@@ -35,22 +35,21 @@ GetOptions(
     
     "hipchat"     =>            \$hipchat,
     "hipchat_api_url=s" =>         \$hipchat_api_url,
-    "hipchat_message_format=s"         => \$contents{hipchat_message_format},
-    "hipchat_notify=s"       => \$contents{hipchat_notify},
-    "hipchat_from=s"       => \$contents{from},
+    "hipchat_message_format=s"         => \$contents{hipchat}->{message_format},
+    "hipchat_notify=s"       => \$contents{hipchat}->{notify},
+    "hipchat_from=s"       => \$contents{hipchat}->{from},
 
     "pagerduty"       => \$pagerduty,
-    "pd_client=s"     => \$contents{client},
-    "pd_client_url=s" => \$contents{client_url},
+    "pagerduty_client=s"     => \$contents{pagerduty}->{client},
+    "pagerduty_client_url=s" => \$contents{pagerduty}->{client_url},
     
     "slack"     =>    \$slack,
-    "mode=s"      =>  \$contents{mode},
+    "slack_mode=s"      =>  \$contents{slack}->{mode},
 ) or die("Error in command line arguments\n");
 die "Please provide --slack --hipchat --pagerduty but only one\n"
   unless defined($hipchat) xor defined($slack) xor defined($pagerduty);
 die "You must provide 'api_token'\n" unless $api_token;
-die "Invalid mode is provied. Please use 'alarm' or 'event'\n"
-  unless $contents{mode} =~ /alarm|event/;
+
   
  
 #get params (from,subject,message from zabbix notification)
@@ -71,6 +70,8 @@ die "Message provided is wrong\n"
 %contents = ( %contents, parse_message( $contents{message} ) );
 my $bot;
 if ($slack) {
+    die "Invalid slack_mode is provied. Please use 'alarm' or 'event'\n"
+        unless $contents{slack}->{mode} =~ /^(alarm|event)$/;
     $bot = SlackBot->new( { api_token => $api_token } );
     $bot->channel($send_to);
 
@@ -79,13 +80,13 @@ elsif ($hipchat) {
     $bot = HipChatBot->new({ 
         api_token => $api_token
         });
-    $bot->hipchat_api_url($hipchat_api_url) if $hipchat_api_url;
+    $bot->web_api_url($hipchat_api_url) if $hipchat_api_url;
  
     $bot->room($send_to);
-    if ( defined($contents{from}) ) {
-        utf8::decode( $contents{from} ); 
+    if ( defined($contents{hipchat}->{from}) ) {
+        utf8::decode( $contents{hipchat}->{from} ); 
         die "'from' provided is wrong\n"
-            unless $contents{from} =~ m/^[[:print:]]+$/;    #from
+            unless $contents{hipchat}->{from} =~ m/^[[:print:]]+$/;    #from
     }
 }
 elsif ($pagerduty) {

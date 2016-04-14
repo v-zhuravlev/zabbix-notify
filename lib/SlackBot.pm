@@ -1,7 +1,7 @@
 package SlackBot;
 use strict;
 use warnings;
-our $VERSION = '0.4';
+our $VERSION = '0.5';
 use parent qw(ZabbixNotify);
 use LWP;
 use URI;
@@ -11,11 +11,11 @@ use Data::Dumper;
 use Storable qw(lock_store lock_retrieve);
 
 use constant { ## no critic(ProhibitConstantPragma)
+    CLEAR_ALARM_AFTER_SECS => 30,
+    STORAGEFILE            => '/var/tmp/zbx-slack-temp-storage',
     HTTP_TOO_MANY_REQUESTS => 429,
     RETRY_DEFAULT          => 2,
     RETRY_WAIT_SECS        => 5,
-    CLEAR_ALARM_AFTER_SECS => 30,
-    STORAGEFILE            => '/var/tmp/zbx-slack-temp-storage',
 };
 
 sub new {
@@ -74,7 +74,7 @@ sub post_message {
  
     my $json_attach = $self->create_json_if_plain($contents);
     if (    $contents->{status} eq 'OK'
-        and $contents->{mode} eq 'alarm'
+        and $contents->{slack}->{mode} eq 'alarm'
         and defined( $contents->{eventid} ) )
     {
         print "Alarm recovery message!\n";
@@ -121,7 +121,7 @@ sub post_message {
         print "Alarm message or plain event message!\n";
         my $message =
           $self->chat_postMessage( { attachments => $json_attach } );
-        if ( $contents->{mode} eq 'alarm' and defined($contents->{eventid})) {
+        if ( $contents->{slack}->{mode} eq 'alarm' and defined($contents->{eventid})) {
             store_message( $contents->{eventid}, $message );
         }
 
@@ -320,7 +320,7 @@ sub create_json_if_plain {
             $json_hash->{color} = $contents->{color};
 
         }
-        $json_attach = JSON::XS->new->encode( [$json_hash] );
+        $json_attach = JSON::XS->new->utf8->encode( [$json_hash] );
         return $json_attach;
     }
 }
