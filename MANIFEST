@@ -5,6 +5,6 @@ lib/SlackBot.pm
 lib/HipChatBot.pm
 lib/PagerDutyBot.pm
 lib/ZabbixNotify.pm
-bin/zbx-slack
+bin/zbx-notify
 t/001_load.t
 t/002_slack_mocks.t
