@@ -120,12 +120,12 @@ You may provide additional params as well, by pressing **Add** and filling them 
 
 Here is what you can setup for Slack:  
 
-| Parameter        | Description                      | Default value  | Example value                           |  
-| ---------------- |:---------------------:|:--------------:|-----------------------------------------|  
-| api_token        |  you bot api token(Mandatory)    | none           |--api_token=xoxb-30461853043-mQE7IGah4bGeC15T5gua4IzK|  
-| slack_mode        |  operation mode(alarm or event)   | alarm           |--slack_mode=event|  
-| debug        |  For providing debug output, useful when running from command line   |   none         |--debug|  
-| nofork        |  To prevent script from forking on posting to Slack    |   none         |--nofork|  
+| Parameter        | Description                      | Default value  | Example value                           | JSON mode(see below)  |  
+| ---------------- |:---------------------:|:--------------:|-----------------------------------------|----|  
+| api_token        |  you bot api token(Mandatory)    | none           |--api_token=xoxb-30461853043-mQE7IGah4bGeC15T5gua4IzK|  Yes |  
+| slack_mode        |  operation mode(alarm or event)   | alarm           |--slack_mode=event|    Yes |
+| debug        |  For providing debug output, useful when running from command line   |   none         |--debug|    Yes |
+| nofork        |  To prevent script from forking on posting to Slack    |   none         |--nofork|    Yes |
 
 Press *Add* to finish media type creation.  
 
@@ -184,6 +184,7 @@ eventid: {EVENT.ID}
 Note:  if you place Macros **{TRIGGER.SEVERITY}** and **{STATUS}** then your messages in Slack will be color coded.  
 Note:  place line `eventid: {EVENT.ID}` if you want to use Alarm mode (which is default)  
 ![image](https://cloud.githubusercontent.com/assets/14870891/14313896/f3edc7e4-fbfc-11e5-842a-2e7410c8d755.png)  
+
 As an alternative you can place JSON object here that would represent Slack [attachment:](https://api.slack.com/docs/attachments)  
 ![image](https://cloud.githubusercontent.com/assets/14870891/14406644/0c820002-feb6-11e5-98e0-6acadad8b7f1.png)  
 Note though, that it is required to place all Zabbix MACROS in double brackets [[ ]], so they are properly transformed into JSON String.  
@@ -327,15 +328,15 @@ You may provide additional params as well, by pressing **Add** and filling them 
 
 Here is what you can setup for HipChat:  
 
-| Parameter        | Description                      | Default value  | Example value                           |  
-| ---------------- |:---------------------:|:--------------:|-----------------------------------------|  
-| api_token        |  you bot api token(Mandatory)    | none           |--api_token=5y9zBYM4Htgg4SNrYovMGE1uGvyrUtFOQGHXdK3J|  
-| hipchat_api_url        |  HipChat api url endpoint   | https://api.hipchat.com           |--hipchat_api_url=https://192.168.10.0/hipchat|
-| hipchat_message_format        |  text or html(see API documentation)   | text           |--hipchat_message_format=html|  
-| hipchat_notify        |  whether to notify HipChat users on new message arrival   | true           |--hipchat_notify=false|  
-| hipchat_from        |  Additional user name in HipChat   | none           |--hipchat_from='Zabbix NW Instance'|  
-| debug        |  For providing debug output, useful when running from command line   |   none         |--debug|  
-| nofork        |  To prevent script from forking on posting to Slack    |   none         |--nofork|  
+| Parameter        | Description                      | Default value  | Example value                           |  JSON mode (see below)  |
+| ---------------- |:---------------------:|:--------------:|-----------------------------------------|---|  
+| api_token        |  you bot api token(Mandatory)    | none           |--api_token=5y9zBYM4Htgg4SNrYovMGE1uGvyrUtFOQGHXdK3J| Yes |  
+| hipchat_api_url        |  HipChat api url endpoint   | https://api.hipchat.com          |--hipchat_api_url=https://192.168.10.0/hipchat | Yes |
+| hipchat_message_format        |  text or html(see API documentation)   | text           |--hipchat_message_format=html|  Ignored  |
+| hipchat_notify        |  whether to notify HipChat users on new message arrival   | true           |--hipchat_notify=false|  Ignored  |
+| hipchat_from        |  Additional user name in HipChat   | none           |--hipchat_from='Zabbix NW Instance'|  Ignored  |
+| debug        |  For providing debug output, useful when running from command line   |   none         |--debug|  Yes |
+| nofork        |  To prevent script from forking on posting to Slack    |   none         |--nofork|  Yes |
 
 Press *Add* to finish media type creation.  
 
@@ -460,13 +461,13 @@ You may provide additional params as well, by pressing **Add** and filling them 
 
 Here is what you can setup for PagerDuty:  
 
-| Parameter        | Description                      | Default value  | Example value                           |  
-| ---------------- |:---------------------:|:--------------:|-----------------------------------------|  
-| api_token        |  your Service key(Mandatory)    | none           |--api_token=1baff6f955c040d795387e7ab9d62090|  
-| pagerduty_client        |  Zabbix instance name(only works if both client and client_url are provided)   | none           |--pagerduty_client=Myzabbix |  
-| pagerduty_client_url        |  Zabbix instance name link   | none           | --pagerduty_client_url=http://zabbix.local |  
-| debug        |  For providing debug output, useful when running from command line   |   none         |--debug|  
-| nofork       |  To prevent script from forking on posting to Slack    |   none         |--nofork|  
+| Parameter        | Description                      | Default value  | Example value                           |  JSON mode(see below)  | 
+| ---------------- |:---------------------:|:--------------:|-----------------------------------------|---|  
+| api_token        |  your Service key(Mandatory)    | none           |--api_token=1baff6f955c040d795387e7ab9d62090| Yes |  
+| pagerduty_client        |  Zabbix instance name(only works if both client and client_url are provided)   | none           |--pagerduty_client=Myzabbix |  Ignored |
+| pagerduty_client_url        |  Zabbix instance name link   | none           | --pagerduty_client_url=http://zabbix.local |  Ignored |
+| debug        |  For providing debug output, useful when running from command line   |   none         |--debug|  Yes |
+| nofork       |  To prevent script from forking on posting to Slack    |   none         |--nofork|  Yes |
 
 Press *Add* to finish media type creation.  
 
