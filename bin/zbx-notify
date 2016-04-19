@@ -15,7 +15,7 @@ my $fork   = 1;
 my $api_token;
 #slack only
 my $slack;
-$contents{slack}->{mode} = "alarm";    #default mode in slack
+$contents{slack}->{mode} = "event";    #default mode in slack
 
 #hipchat only
 my $hipchat;
@@ -108,7 +108,6 @@ else {
     if ( $pid == 0 ) {
 
         #child
-
         die "CANNOT FORK!!\n" unless defined $pid;
         open( STDOUT, '>' , "/dev/null" );    # suppressing output
         open( STDERR, '>' , "/dev/null" );    # suppressing output

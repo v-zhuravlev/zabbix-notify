@@ -22,8 +22,8 @@ Here is the idea in brief:
 
 **Slack:**  
 -	Color coding events depending on Trigger Status and Severity  
--	Recovery message from Zabbix will update and then delete already posted message in Slack (--slack_mode=alarm)  
 -	Recovery message from Zabbix will be posted as new message (--slack_mode=event)  
+-	Recovery message from Zabbix will update and then delete already posted message in Slack (--slack_mode=alarm)  
 -	JSON can be used to compose Slack messages. See Slack [message attachments](https://api.slack.com/docs/attachments)  
 
 **HipChat:**  
@@ -123,7 +123,7 @@ Here is what you can setup for Slack:
 | Parameter        | Description                      | Default value  | Example value                           | JSON mode(see below)  |  
 | ---------------- |:---------------------:|:--------------:|-----------------------------------------|----|  
 | api_token        |  you bot api token(Mandatory)    | none           |--api_token=xoxb-30461853043-mQE7IGah4bGeC15T5gua4IzK|  Yes |  
-| slack_mode        |  operation mode(alarm or event)   | alarm           |--slack_mode=event|    Yes |
+| slack_mode        |  operation mode(event or alarm)   | event           |--slack_mode=event|    Yes |
 | debug        |  For providing debug output, useful when running from command line   |   none         |--debug|    Yes |
 | nofork        |  To prevent script from forking on posting to Slack    |   none         |--nofork|    Yes |
 
@@ -168,8 +168,8 @@ Trigger: {STATUS}: {TRIGGER.NAME}: {TRIGGER.SEVERITY}
 Timestamp: {EVENT.DATE} {EVENT.TIME}
 {TRIGGER.COMMENT}
 {TRIGGER.URL}
-{INVENTORY.LOCATION}
-eventid: {EVENT.ID}
+http://zabbix.local
+Eventid: {EVENT.ID}
 ```
 Recovery message:  
 ```
@@ -178,11 +178,11 @@ Trigger: {STATUS}: {TRIGGER.NAME}: {TRIGGER.SEVERITY}
 Timestamp: {EVENT.RECOVERY.DATE} {EVENT.RECOVERY.TIME}
 {TRIGGER.COMMENT}
 {TRIGGER.URL}
-{INVENTORY.LOCATION}
-eventid: {EVENT.ID}
+http://zabbix.local
+Eventid: {EVENT.ID}
 ```
 Note:  if you place Macros **{TRIGGER.SEVERITY}** and **{STATUS}** then your messages in Slack will be color coded.  
-Note:  place line `eventid: {EVENT.ID}` if you want to use Alarm mode (which is default)  
+Note:  place line `Eventid: {EVENT.ID}` if you want to use Alarm mode    
 ![image](https://cloud.githubusercontent.com/assets/14870891/14313896/f3edc7e4-fbfc-11e5-842a-2e7410c8d755.png)  
 
 As an alternative you can place JSON object here that would represent Slack [attachment:](https://api.slack.com/docs/attachments)  

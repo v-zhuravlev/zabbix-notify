@@ -1,7 +1,7 @@
 package SlackBot;
 use strict;
 use warnings;
-our $VERSION = '0.5';
+our $VERSION = '0.6';
 use parent qw(ZabbixNotify);
 use LWP;
 use URI;
@@ -85,7 +85,6 @@ sub post_message {
             print Dumper $mes_to_replace if $self->debug;
             $self->chat_updateMessage(
                 {
-                    text        => 'CLEARED',
                     attachments => $json_attach,
                     ts          => $mes_to_replace->{'ts'},
                     channel     => $mes_to_replace->{'channel'}
