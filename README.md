@@ -50,7 +50,7 @@ There are numerous ways to install them:
 
 | in Debian  | In Centos | using CPAN | using cpanm|  
 |------------|-----------|------------|------------|  
-|  `apt-get install libwww-perl libjson-xs-perl` | `yum install perl-JSON-XS perl-libwww-perl` | `PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install Bundle::LWP'` and  `PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install JSON::XS` | `cpanm install LWP` and `cpanm install JSON::XS`|  
+|  `apt-get install libwww-perl libjson-xs-perl` | `yum install perl-JSON-XS perl-libwww-perl perl-LWP-Protocol-https` | `PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install Bundle::LWP'` and  `PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install JSON::XS` | `cpanm install LWP` and `cpanm install JSON::XS`|  
 
 
 Once this is done, download tar and install it into the system:  
@@ -88,14 +88,14 @@ cd /usr/local/share/zabbix/alertscripts
  
 To ADD ALARM
 ```
-zbx-notify @your_name_in_slack_here 'PROBLEM:myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1' 'Host: myHOSTNAME
-Trigger: PROBLEM: myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1: High
+./zbx-notify @your_name_in_slack_here 'PROBLEM:myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1' 'Host: myHOSTNAME \
+Trigger: PROBLEM: myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1: High \
 Timestamp: 2016.03.14 11:57:10 YEKT eventid: 100502' --api_token=your_token_here --slack
 ```
 To CLEAR ALARM RUN
 ```
-zbx-notify @your_name_in_slack_here 'OK:myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1' 'Host: myHOSTNAME
-Trigger: OK: myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1: High
+./zbx-notify @your_name_in_slack_here 'OK:myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1' 'Host: myHOSTNAME \
+Trigger: OK: myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1: High \
 Timestamp: 2016.03.14 11:57:10 YEKT eventid: 100502' --api_token=your_token_here --slack
 ```
 
@@ -299,9 +299,9 @@ cd /usr/local/share/zabbix/alertscripts
 
 To ADD ALARM
 ```
-zbx-notify 'roomname' 'PROBLEM:myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1' \
-'Host: myHOSTNAME
-Trigger: PROBLEM: myHOSTNAME Температуа Failure on DAE5S Bus 1 Enclosure 1: High
+./zbx-notify 'roomname' 'PROBLEM:myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1' \
+'Host: myHOSTNAME \
+Trigger: PROBLEM: myHOSTNAME Температуа Failure on DAE5S Bus 1 Enclosure 1: High \
 Timestamp: 2016.03.14 11:57:10 eventid: 100502' \
 --api_token=5y9zBYM4Htgg4SNrYovMGE1uGvyrUtFOQGHXdK3J \
 --hipchat
@@ -423,18 +423,18 @@ cd /usr/local/share/zabbix/alertscripts
 
 To ADD ALARM  
 ```
-zbx-notify pagerduty 'PROBLEM:myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1' \
-'Host: myHOSTNAME
-Trigger: PROBLEM: myHOSTNAME Температуа Failure on DAE5S Bus 1 Enclosure 1: High
+./zbx-notify pagerduty 'PROBLEM:myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1' \
+'Host: myHOSTNAME \
+Trigger: PROBLEM: myHOSTNAME Температуа Failure on DAE5S Bus 1 Enclosure 1: High \
 Timestamp: 2016.03.14 11:57:10 eventid: 100502' \
 --api_token=1baff6f955c040d795387e7ab9d62090 \
 --pagerduty --nofork
 ```
 To RESOLVE IT  
 ```
-zbx-notify pagerduty 'OK:myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1' \
-'Host: myHOSTNAME
-Trigger: OK: myHOSTNAME Температуа Failure on DAE5S Bus 1 Enclosure 1: High
+./zbx-notify pagerduty 'OK:myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1' \
+'Host: myHOSTNAME \
+Trigger: OK: myHOSTNAME Температуа Failure on DAE5S Bus 1 Enclosure 1: High \
 Timestamp: 2016.03.14 11:57:10 eventid: 100502' \
 --api_token=1baff6f955c040d795387e7ab9d62090 \
 --pagerduty --nofork
