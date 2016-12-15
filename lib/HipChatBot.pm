@@ -208,7 +208,7 @@ sub post_with_retries {
     my $ua = LWP::UserAgent->new();
 
     if ( defined( $self->mock_url ) ) { $url = $self->mock_url; } #mock replace:
-
+    $ua->env_proxy;
     $ua->show_progress(1) if $self->debug;
 
   ATTEMPT: {
