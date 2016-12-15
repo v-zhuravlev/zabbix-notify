@@ -1,7 +1,7 @@
 package SlackBot;
 use strict;
 use warnings;
-our $VERSION = '0.6';
+our $VERSION = '0.7';
 use parent qw(ZabbixNotify);
 use LWP;
 use URI;
@@ -365,7 +365,7 @@ sub get_with_retries {
     my $ua = LWP::UserAgent->new();
 
     if ( defined( $self->mock_url ) ) { $url = $self->mock_url; } #mock replace:
-
+    $ua->env_proxy;
     $ua->show_progress(1) if $self->debug;
 
   ATTEMPT: {
