@@ -19,6 +19,7 @@ Here is the idea in brief:
 **All:**  
 -	All configuration is done in Zabbix web-interface(no config files anywhere)  
 -	UTF8 supported  
+- HTTPS/HTTP proxy supported(see how at the end)  
 
 **Slack:**  
 -	Color coding events depending on Trigger Status and Severity  
@@ -599,3 +600,11 @@ zabbix_server --runtime-control log_level_increase=alerter
 ```
 now tail you log to see what the problem might be:
 `tail -f /var/log/zabbix-server/zabbix_server.log`  
+
+##HTTP(S) Proxy  
+If you need to use proxy to connect to services, make sure that environment variables 
+`http_proxy` and `https_proxy` are set under user `zabbix`, for example:  
+```
+export http_proxy=http://proxy_ip:3128/
+export https_proxy=$http_proxy
+```
