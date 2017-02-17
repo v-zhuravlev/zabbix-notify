@@ -1,7 +1,7 @@
 package ZabbixNotify;
 use strict;
 use warnings;
-our $VERSION = '0.7';
+our $VERSION = '0.7.1';
 
 use Carp;
 use Data::Dumper;

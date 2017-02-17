@@ -1,7 +1,7 @@
 package PagerDutyBot;
 use strict;
 use warnings;
-our $VERSION = '0.7';
+our $VERSION = '0.7.1';
 use parent 'ZabbixNotify';
 use LWP;
 use URI;

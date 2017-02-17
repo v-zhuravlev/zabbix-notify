@@ -1,7 +1,7 @@
 package SlackBot;
 use strict;
 use warnings;
-our $VERSION = '0.7';
+our $VERSION = '0.7.1';
 use parent qw(ZabbixNotify);
 use LWP;
 use URI;
@@ -87,7 +87,8 @@ sub post_message {
                 {
                     attachments => $json_attach,
                     ts          => $mes_to_replace->{'ts'},
-                    channel     => $mes_to_replace->{'channel'}
+                    channel     => $mes_to_replace->{'channel'},
+                    text        => $mes_to_replace->{'text'}
                 }
             );
         }
@@ -163,8 +164,7 @@ sub chat_updateMessage {
     my $ts = $args->{ts} || die "Failed to updateMessage: ts is required\n";
     my $channel = $args->{channel}
       || die "Failed to updateMessage: channel is required\n";
-    my $text = $args->{text}
-      || die "Failed to updateMessage: no text is provided\n";
+    my $text = $args->{text};
     my $json_attach = $args->{attachments}
       || die "Failed to updateMessage: no attachment is provided\n";
 
