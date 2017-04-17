@@ -345,11 +345,11 @@ sub choose_color {
     my $color;
     if ($contents->{status} eq 'OK') { return '#CCFFCC'; }
     elsif ($contents->{severity} eq 'Not classified') {return '#DBDBDB';}
-    elsif ($contents->{severity} eq 'Information') {return '#CCFFCC';}
+    elsif ($contents->{severity} eq 'Information') {return '#33CCFF';}
     elsif ($contents->{severity} eq 'Warning') {return '#FFFFCC';}
     elsif ($contents->{severity} eq 'Average') {return '#FFCCCC';}
     elsif ($contents->{severity} eq 'High') {return '#FF9999';}
-    elsif ($contents->{severity} eq 'Disaster') {return '#DBDBDB';}
+    elsif ($contents->{severity} eq 'Disaster') {return '#FF6666';}
     else {return '#DBDBDB';}
 
 }
