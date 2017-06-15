@@ -152,12 +152,13 @@ sub set_ssl_verify_hostname{
     if (defined($ssl_verify_hostname )){
         if($ssl_verify_hostname == 0) {
             $ENV{'PERL_LWP_SSL_VERIFY_HOSTNAME'} = 0;
+            print "setting PERL_LWP_SSL_VERIFY_HOSTNAME to $ssl_verify_hostname\n" if $debug;
         }
         elsif ($ssl_verify_hostname == 1){
             $ENV{'PERL_LWP_SSL_VERIFY_HOSTNAME'} = 1;
-            
+            print "setting PERL_LWP_SSL_VERIFY_HOSTNAME to $ssl_verify_hostname\n" if $debug;
         }
-        print "setting PERL_LWP_SSL_VERIFY_HOSTNAME to $ssl_verify_hostname\n" if $debug;
+        
     }
 }
 
