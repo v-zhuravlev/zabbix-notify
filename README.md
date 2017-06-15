@@ -604,7 +604,7 @@ zabbix_server --runtime-control log_level_increase=alerter
 now tail you log to see what the problem might be:
 `tail -f /var/log/zabbix-server/zabbix_server.log`  
 
-##HTTP(S) Proxy  
+## HTTP(S) Proxy  
 If you need to use proxy to connect to services, make sure that environment variables 
 `http_proxy` and `https_proxy` are set under user `zabbix`, for example:  
 ```
