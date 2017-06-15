@@ -68,7 +68,7 @@ die "Message provided is wrong\n"
   unless $contents{message} =~ m/^( [[:print:]] | \t | \n | \r )+$/x;    #message
 
 #parse contents to find something interesting (OK|PROBLEM, SEVERITY LEVEL...)
-%contents = ( %contents, parse_message( $contents{message} ) );
+%contents = ( %contents, parse_message( $contents{subject}.' '.$contents{message} ) );
 my $bot;
 if ($slack) {
     die "Invalid slack_mode is provied. Please use 'alarm' or 'event'\n"
