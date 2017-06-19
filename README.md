@@ -127,6 +127,7 @@ Here is what you can setup for Slack:
 | slack_mode        |  operation mode(event or alarm)   | event           |--slack_mode=event|    Yes |
 | debug        |  For providing debug output, useful when running from command line   |   none         |--debug|    Yes |
 | nofork        |  To prevent script from forking on posting to Slack    |   none         |--nofork|    Yes |
+| no-ssl_verify_hostname        |  To ignore SSL certificate validation failures.   |   none         |--no-ssl_verify_hostname|    Yes |
 
 Press *Add* to finish media type creation.  
 
@@ -338,6 +339,7 @@ Here is what you can setup for HipChat:
 | hipchat_from        |  Additional user name in HipChat   | none           |--hipchat_from='Zabbix NW Instance'|  Ignored  |
 | debug        |  For providing debug output, useful when running from command line   |   none         |--debug|  Yes |
 | nofork        |  To prevent script from forking on posting to Slack    |   none         |--nofork|  Yes |
+| no-ssl_verify_hostname        |  To ignore SSL certificate validation failures.   |   none         |--no-ssl_verify_hostname|    Yes |
 
 Press *Add* to finish media type creation.  
 
@@ -469,6 +471,7 @@ Here is what you can setup for PagerDuty:
 | pagerduty_client_url        |  Zabbix instance name link   | none           | --pagerduty_client_url=http://zabbix.local |  Ignored |
 | debug        |  For providing debug output, useful when running from command line   |   none         |--debug|  Yes |
 | nofork       |  To prevent script from forking on posting to Slack    |   none         |--nofork|  Yes |
+| no-ssl_verify_hostname        |  To ignore SSL certificate validation failures.   |   none         |--no-ssl_verify_hostname|    Yes |
 
 Press *Add* to finish media type creation.  
 
@@ -601,7 +604,7 @@ zabbix_server --runtime-control log_level_increase=alerter
 now tail you log to see what the problem might be:
 `tail -f /var/log/zabbix-server/zabbix_server.log`  
 
-##HTTP(S) Proxy  
+## HTTP(S) Proxy  
 If you need to use proxy to connect to services, make sure that environment variables 
 `http_proxy` and `https_proxy` are set under user `zabbix`, for example:  
 ```

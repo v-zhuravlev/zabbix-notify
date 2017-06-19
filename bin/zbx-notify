@@ -12,6 +12,7 @@ use PagerDutyBot;
 my %contents;
 my $debug  = 0;
 my $fork   = 1;
+my $ssl_verify_hostname   = undef; # whether or not user wants to explicitly set the value for: #$ENV{'PERL_LWP_SSL_VERIFY_HOSTNAME'};
 my $api_token;
 #slack only
 my $slack;
@@ -31,7 +32,7 @@ GetOptions(
     "api_token=s" =>  \$api_token,
     "debug!"       => \$debug,
     "fork!"      =>   \$fork,
-    
+    "ssl_verify_hostname!"   =>  \$ssl_verify_hostname,
     
     "hipchat"     =>            \$hipchat,
     "hipchat_api_url=s" =>         \$hipchat_api_url,
@@ -102,6 +103,11 @@ print Dumper $bot if $debug;
 print Dumper \%contents if $debug;
 binmode STDOUT, ":raw";
 
+
+set_ssl_verify_hostname();
+
+
+
 if (not $fork) { $bot->post_message( \%contents ); }
 else {
     my $pid = fork();
@@ -140,3 +146,20 @@ sub parse_message {
     }
     return %result;
 }
+
+
+sub set_ssl_verify_hostname{
+    if (defined($ssl_verify_hostname )){
+        if($ssl_verify_hostname == 0) {
+            $ENV{'PERL_LWP_SSL_VERIFY_HOSTNAME'} = 0;
+            print "setting PERL_LWP_SSL_VERIFY_HOSTNAME to $ssl_verify_hostname\n" if $debug;
+        }
+        elsif ($ssl_verify_hostname == 1){
+            $ENV{'PERL_LWP_SSL_VERIFY_HOSTNAME'} = 1;
+            print "setting PERL_LWP_SSL_VERIFY_HOSTNAME to $ssl_verify_hostname\n" if $debug;
+        }
+        
+    }
+}
+
+
