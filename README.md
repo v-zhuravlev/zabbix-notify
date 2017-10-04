@@ -54,6 +54,7 @@ There are numerous ways to install them:
 |  `apt-get install libwww-perl libjson-xs-perl` | `yum install perl-JSON-XS perl-libwww-perl perl-LWP-Protocol-https` | `PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install Bundle::LWP'` and  `PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install JSON::XS'` | `cpanm install LWP` and `cpanm install JSON::XS`|  
 
 You may also might requireadditional modules to do `make test` and installation:
+
 | in Debian  | In Centos | using CPAN | using cpanm|  
 |------------|-----------|------------|------------|  
 |  `apt-get install libtest-simple-perl libtest-most-perl` | `yum install perl-ExtUtils-MakeMaker perl-Test-Simple perl-Test-Exception` | `cpan install ExtUtils::MakeMaker` and  `PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install Test::Simple'` and  `PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install Test::Exception'` | `cpanm install ExtUtils::MakeMaker` and `cpanm install Test::Simple` and `cpanm install Test::Exception`|  
