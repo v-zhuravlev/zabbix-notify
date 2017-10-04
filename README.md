@@ -53,6 +53,10 @@ There are numerous ways to install them:
 |------------|-----------|------------|------------|  
 |  `apt-get install libwww-perl libjson-xs-perl` | `yum install perl-JSON-XS perl-libwww-perl perl-LWP-Protocol-https` | `PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install Bundle::LWP'` and  `PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install JSON::XS'` | `cpanm install LWP` and `cpanm install JSON::XS`|  
 
+You may also might requireadditional modules to do `make test` and installation:
+| in Debian  | In Centos | using CPAN | using cpanm|  
+|------------|-----------|------------|------------|  
+|  `apt-get install libtest-simple-perl libtest-most-perl` | `yum install perl-ExtUtils-MakeMaker perl-Test-Simple perl-Test-Exception` | `cpan install ExtUtils::MakeMaker` and  `PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install Test::Simple'` and  `PERL_MM_USE_DEFAULT=1 perl -MCPAN -e 'install Test::Exception'` | `cpanm install ExtUtils::MakeMaker` and `cpanm install Test::Simple` and `cpanm install Test::Exception`|  
 
 Once this is done, download tar and install it into the system:  
 ```
@@ -274,7 +278,7 @@ And for Recovery:
 
  
  
-In **Condition** tab do not forget to include **Trigger value = Problem condition**. The rest depends on your needs.  
+In **Condition** tab do not forget to include **Trigger value = Problem condition** (This option is removed in Zabbix 3.4). The rest depends on your needs.  
 ![image](https://cloud.githubusercontent.com/assets/14870891/14313939/2ae4e980-fbfd-11e5-96db-81325b6d40b0.png)
  
 In **Operations** tab select Notification Agent as recipient of the message sent via Slack.  
@@ -396,7 +400,7 @@ Note though, that it is required to place all Zabbix MACROS in double brackets [
 
  
  
-In **Condition** tab do not forget to include **Trigger value = Problem condition**. The rest depends on your needs.  
+In **Condition** tab do not forget to include **Trigger value = Problem condition**(This option is removed in Zabbix 3.4). The rest depends on your needs.  
 ![image](https://cloud.githubusercontent.com/assets/14870891/14313939/2ae4e980-fbfd-11e5-96db-81325b6d40b0.png)
  
 In **Operations** tab select Notification Agent as recipient of the message sent via HipChat.  
@@ -568,7 +572,7 @@ And for Recovery:
 ![image](https://cloud.githubusercontent.com/assets/14870891/14530924/cf05cac2-0263-11e6-9aef-25ed525bb46e.png)  
  
  
-In **Condition** tab do not forget to include **Trigger value = Problem condition**. The rest depends on your needs.  
+In **Condition** tab do not forget to include **Trigger value = Problem condition**(This option is removed in Zabbix 3.4). The rest depends on your needs.  
 ![image](https://cloud.githubusercontent.com/assets/14870891/14313939/2ae4e980-fbfd-11e5-96db-81325b6d40b0.png)
  
 In **Operations** tab select Notification Agent as recipient of the message sent via PagerDuty.  
