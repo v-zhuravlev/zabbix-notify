@@ -1,6 +1,6 @@
 # zabbix-notify
 [![Build Status](https://travis-ci.org/v-zhuravlev/zabbix-notify.svg?branch=master)](https://travis-ci.org/v-zhuravlev/zabbix-notify)  
-Notify alarms from Zabbix 3.0 to Slack, HipChat and PagerDuty  
+Notify alarms from Zabbix 3.x to Slack, HipChat and PagerDuty  
 
 # About
 This guide provides step-by-step guide how to install and use scripts to send notifications from Zabbix to popular collaborations platforms: **HipChat**, **Slack** and Incident Management system **PagerDuty**.
