@@ -213,11 +213,13 @@ sub check_slack_response {
     my $response = shift;
 
     $self->last_err('') if $self->last_err ne '';    #delete prev error
-
+	
     if ( !$response->is_success ) {
         die "Error: ", $response->status_line . "\n";
     }
+	
     my $json_resp = JSON::XS->new->utf8->decode( $response->content );
+	print Dumper $json_resp if $self->debug;
     if ( !$json_resp->{ok} ) {
         if ( $json_resp->{error} eq 'message_not_found' ) {
             $self->last_err('message_not_found');
