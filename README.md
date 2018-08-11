@@ -3,7 +3,7 @@
 Notify alarms from Zabbix 3.x to Slack, HipChat and PagerDuty  
 
 # About
-This guide provides step-by-step guide how to install and use scripts to send notifications from Zabbix to popular collaborations platforms: **HipChat**, **Slack** and Incident Management system **PagerDuty**.
+This guide provides step-by-step guide how to install and use scripts to send notifications from Zabbix to popular collaborations platforms: **HipChat**(Deprecated), **Slack** and Incident Management system **PagerDuty**.
 Here is the idea in brief:  
 -	install scripts on Zabbix Server
 -	in HipChat, Slack or PagerDuty generate access key for Zabbix
