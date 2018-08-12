@@ -73,6 +73,8 @@ sub post_message {
     $contents->{color} = choose_color($contents);
  
     my $json_attach = $self->create_json_if_plain($contents);
+
+    #here goes alarm mode
     if (    $contents->{status} eq 'OK'
         and $contents->{slack}->{mode} eq 'alarm'
         and defined( $contents->{eventid} ) )
@@ -251,7 +253,7 @@ sub check_slack_response {
     }
 	
     my $json_resp = JSON::XS->new->utf8->decode( $response->content );
-	print Dumper $json_resp if $self->debug;
+	print "Slack response is:\n".$response->content."\n" if $self->debug;
     if ( !$json_resp->{ok} ) {
         if ( $json_resp->{error} eq 'message_not_found' ) {
             $self->last_err('message_not_found');
@@ -346,12 +348,12 @@ sub create_json_if_plain {
 
     };
     if ($@) {
-        print "message is not JSON, going to proceed as with regular text\n";
+        print "message is not JSON, going to proceed as with regular text\n" if $self->{debug};
         $json_attach = create_json_attach_only($contents);
         return $json_attach;
     }
     else {
-        print "message is JSON, going to proceed as with JSON attachment\n";
+        print "message is JSON, going to proceed as with JSON attachment\n" if $self->{debug};
         if (   not defined( $json_hash->{color} )
             and exists( $contents->{color} ) )
         {
