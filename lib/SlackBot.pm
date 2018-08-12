@@ -81,14 +81,15 @@ sub post_message {
 
         my $mes_to_replace;
 
-        if ( $mes_to_replace = retrieve_from_store( $contents->{eventid} ) ) {
+        if ( $mes_to_replace = retrieve_from_store( $contents->{eventid}, 1 ) ) {
             print Dumper $mes_to_replace if $self->debug;
+            #always update first [0] message (thread start)
             $self->chat_updateMessage(
                 {
                     attachments => $json_attach,
-                    ts          => $mes_to_replace->{'ts'},
-                    channel     => $mes_to_replace->{'channel'},
-                    text        => $mes_to_replace->{'text'}
+                    ts          => $mes_to_replace->[0]->{'ts'},
+                    channel     => $mes_to_replace->[0]->{'channel'},
+                    text        => $mes_to_replace->[0]->{'text'}
                 }
             );
         }
@@ -108,21 +109,44 @@ sub post_message {
 
         sleep CLEAR_ALARM_AFTER_SECS;
 
-        $self->chat_deleteMessage(
-            {
-                ts      => $mes_to_replace->{'ts'},
-                channel => $mes_to_replace->{'channel'}
+        #delete thread starter and all replies
+        foreach my $message_to_delete (@{$mes_to_replace}) {
+            $self->chat_deleteMessage(
+                {
+                    ts      => $message_to_delete->{'ts'},
+                    channel => $message_to_delete->{'channel'}
+                }
+            );
+        }
+
+    } else {
+        print "Alarm message or plain event message or acknowledgement!\n";
+        my $message;
+        #here goes Slack threading
+        if ( defined( $contents->{eventid} ) ) {
+            #Probably a Reply(Acknowlegement)! Let's attach it to the Slack thread...
+            my $mes_to_reply;
+            #false(0) = means do not delete from store. What if there is no recovery?
+            if ( $mes_to_reply = retrieve_from_store( $contents->{eventid}, 0 ) ) {
+                print "Found message to reply in Slack\n";
+                print Dumper $mes_to_reply if $self->debug;
+                #always use  first [0] message found in store (thread start)
+                $message =
+                    $self->chat_postMessage( { attachments => $json_attach, thread_ts => $mes_to_reply->[0]->{ts} } );
+                print "Storing event id...\n" if $self->{debug};
+                store_message( $contents->{eventid}, $message );
+            } else {
+                print "Posting message\n";
+                $message =
+                    $self->chat_postMessage( { attachments => $json_attach} );
+
+                print "Storing event id...\n" if $self->{debug};
+                store_message( $contents->{eventid}, $message );
+
             }
-        );
-
-    }
-
-    else {
-        print "Alarm message or plain event message!\n";
-        my $message =
-          $self->chat_postMessage( { attachments => $json_attach } );
-        if ( $contents->{slack}->{mode} eq 'alarm' and defined($contents->{eventid})) {
-            store_message( $contents->{eventid}, $message );
+        } else {#if no eventid found, then nothing to store
+            $message =
+                $self->chat_postMessage( { attachments => $json_attach} );
         }
 
     }
@@ -138,17 +162,25 @@ sub chat_postMessage {
       || $self->channel
       || die "Failed to postMessage: channel is required\n";
 
+    #required for replies in Slack
+    my $thread_ts =
+         $args->{thread_ts};
+
     my $json_attach = $args->{attachments}
       || die "Failed to postMessage: no attachment is provided\n";
 
     my $url = URI->new( $self->web_api_url . 'chat.postMessage' );
 
-    $url->query_form(
+    my %params = (
         'token'       => $self->api_token,
         'channel'     => $channel,
         'attachments' => $json_attach,
         'as_user'     => 'true'
     );
+    if ($thread_ts) {
+      $params{thread_ts}=$thread_ts;
+    }
+    $url->query_form(%params);
 
     my $response      = $self->get_with_retries($url);
     my $json_contents = JSON::XS->new->utf8->decode( $response->content );
@@ -242,19 +274,24 @@ sub store_message {
     my $storage_file = STORAGEFILE;
     my ( $stored, $to_store );
 
-    $to_store->{$eventid} = {
+    $to_store = {
         ts      => $message->{ts},
         channel => $message->{channel}
     };
+    
 
     if ( -f $storage_file ) {
         $stored = lock_retrieve $storage_file;
-        lock_store { %{$stored}, %{$to_store} }, $storage_file;
+        
+        push @{$stored->{$eventid}},$to_store;
+        lock_store $stored, $storage_file;
     }
     else {
 
-#first time file creation, apply proper file permissions and store only single event
-        lock_store $to_store, $storage_file;
+        #first time file creation, apply proper file permissions and store only single event
+        lock_store {$eventid=>[
+            $to_store
+        ]}, $storage_file;
         chmod 0666, $storage_file;
     }
 
@@ -262,16 +299,18 @@ sub store_message {
 
 sub retrieve_from_store {
     my $eventid      = shift;
+    my $delete       = shift || 0;
     my $storage_file = STORAGEFILE;
     my $stored;
     my $message_to_delete;
+
 
     if ( -f $storage_file ) {
 
         $stored = lock_retrieve $storage_file;
 
-        if ( $message_to_delete = delete $stored->{$eventid} ) {
-
+        if ( $message_to_delete = $stored->{$eventid} ) {
+            delete $stored->{$eventid} if $delete;
             lock_store $stored, $storage_file;
         }
     }
