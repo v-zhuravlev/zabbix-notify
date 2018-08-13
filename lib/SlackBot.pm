@@ -1,7 +1,7 @@
 package SlackBot;
 use strict;
 use warnings;
-our $VERSION = '0.7.1';
+our $VERSION = '0.8';
 use parent qw(ZabbixNotify);
 use LWP;
 use URI;
