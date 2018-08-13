@@ -35,6 +35,7 @@ Here is the idea in brief:
 
 **PagerDuty:**  
 -	Recovery message from Zabbix will resolve already created incident in PagerDuty  
+-   Acknowledgements will be added already created incidenents
 -	JSON can be used to compose messages. See PagerDuty API  [here](https://developer.pagerduty.com/documentation/integration/events/trigger)  and [here](https://developer.pagerduty.com/documentation/integration/events/resolve)  
 
 
@@ -121,6 +122,7 @@ Fill **Script paramters** in the following order
 3: `{ALERT.MESSAGE}`  
 4: `--api_token=you_token_here`  
 5: `--slack`  
+6: `--no-fork` (for Zabbix 3.4+ only)  
 Note that there should be no ticks or quotes after `--api-token=` only the key itself.  
 You may provide additional params as well, by pressing **Add** and filling them in the form:  
 `--param=value`  
@@ -155,7 +157,7 @@ Create New media:
 
 
 
-Note You can also define new media for real Zabbix users: use their Slack name in 'Send to'  preceded by @ (for example @bob). In that case this users can be notified by Direct Message as well.  
+Note: You can also define new media for real Zabbix users: use their Slack name in 'Send to'  preceded by @ (for example @bob). In that case this users can be notified by Direct Message as well.  
 
  
 
@@ -164,11 +166,13 @@ Note You can also define new media for real Zabbix users: use their Slack name i
 Create new action (go to **Configuration -> Action** ,choose  **Event source: Triggers** press **Create action**) that is to be send to Slack.  
 Here is the example:  
 In **Operations** tab:  
+![image](https://user-images.githubusercontent.com/14870891/44031782-c9cd7a48-9f0d-11e8-9106-244059feb6dc.png)
+
 Default subject: anything you like, but I recommend  
 ```
 {TRIGGER.STATUS}:{HOSTNAME}:{TRIGGER.NAME}. 
 ```
-Default message: anything you like, for example:  
+Default message: anything you like.  
 ```
 Host: {HOSTNAME}
 Trigger: {STATUS}: {TRIGGER.NAME}: {TRIGGER.SEVERITY}
@@ -194,10 +198,14 @@ http://zabbix.local
 Eventid: {EVENT.ID}
 ```
 
-Note:  In Zabbix 3.4 and newer you can configure **Acknowledgement operations** as well.  
+In **Acknowledgement operations** (Zabbix 3.4+) tab:
+```
+{USER.FULLNAME} acknowledged problem at {ACK.DATE} {ACK.TIME} with the following message:
+{ACK.MESSAGE}
+Current problem status is {EVENT.STATUS}, Eventid: {EVENT.ID}
+```
 Note:  if you place Macros **{TRIGGER.SEVERITY}** and **{STATUS}** then your messages in Slack will be color coded.  
-Note:  place line `Eventid: {EVENT.ID}` if you want to use Alarm mode    
-![image](https://cloud.githubusercontent.com/assets/14870891/14313896/f3edc7e4-fbfc-11e5-842a-2e7410c8d755.png)  
+Note:  place line `Eventid: {EVENT.ID}` if you want to use Alarm mode in all messages, including Acnkowledgements.     
 
 As an alternative you can place JSON object here that would represent Slack [attachment:](https://api.slack.com/docs/attachments)  
 ![image](https://cloud.githubusercontent.com/assets/14870891/14406644/0c820002-feb6-11e5-98e0-6acadad8b7f1.png)  
@@ -349,6 +357,7 @@ Fill **Script parameters** in the following order
 3: `{ALERT.MESSAGE}`  
 4: `--api_token=you_token_here`  
 5: `--pagerduty`  
+6: `--no-fork` (for Zabbix 3.4+ only)  
 Note that there should be no ticks or quotes after `--api-token=` only the key itself.  
 You may provide additional params as well, by pressing **Add** and filling them in the form:  
 `--param=value`  
@@ -469,8 +478,11 @@ More on Action configuration in Zabbix can be found  [here:](https://www.zabbix.
 
 # About using --nofork
 
-If you have Zabbix 3.4 or newer, it recommended to use --nofork option from Zabbix. This will give you an ability to see [errors](https://www.zabbix.com/documentation/3.4/manual/introduction/whatsnew340#return_code_check_for_scripts_and_commands) in Zabbix if something goes wrong. Just make sure you enabled [concurrent sessions](https://www.zabbix.com/documentation/3.4/manual/introduction/whatsnew340#parallel_processing_of_alerts) in Zabbix.  
-The only case where --nofork is not recommend if you use Slack with --slack_mode=alarm, since script then sleeps for 30s before removing messages from Slack.
+If you have Zabbix 3.4 or newer, it recommended to use --nofork option from Zabbix. This will give you an ability to see [errors](https://www.zabbix.com/documentation/3.4/manual/introduction/whatsnew340#return_code_check_for_scripts_and_commands) in Zabbix if something goes wrong:
+![image](https://user-images.githubusercontent.com/14870891/44031259-16515a3a-9f0c-11e8-871b-e327d04b4722.png)
+
+ Just make sure you enabled [concurrent sessions](https://www.zabbix.com/documentation/3.4/manual/introduction/whatsnew340#parallel_processing_of_alerts) in Zabbix.  
+Use --nofork with care if you use Slack with --slack_mode=alarm, since script then sleeps for 30s before removing messages from Slack.
 
 
 
