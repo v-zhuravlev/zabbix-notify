@@ -66,92 +66,109 @@ sub test {
 
 sub post_message {
     my $self     = shift;
-    my $contents = shift
-      || die "No contents provided to post into Slack!\n";
+    my $contents = shift || die "No contents provided to post into Slack!\n";
 
     #prepare color:
     $contents->{color} = choose_color($contents);
  
     my $json_attach = $self->create_json_if_plain($contents);
 
-    #here goes alarm mode
-    if (    $contents->{status} eq 'OK'
-        and $contents->{slack}->{mode} eq 'alarm'
-        and defined( $contents->{eventid} ) )
+    #Slack possible modes:
+    # event - Notifications from Zabbix are posted in Slack in without any 'magic'
+    # alarm - When problem is resolved in Zabbix - notification is updated in Slack and then deleted. 
+    #         Acknowlegments are attached as replies to thread
+    # alarm-no-delete - When problem is resolved in Zabbix - notification is updated in Slack but not deleted.
+    #         Acknowlegments are attached as replies to thread
+    
+
+    if (($contents->{slack}->{mode} eq 'alarm' or $contents->{slack}->{mode} eq 'alarm-no-delete')
+            and defined( $contents->{eventid} ) ) 
     {
-        print "Alarm recovery message!\n";
+        #alarm recovery
+        if ($contents->{status} eq 'OK'){
 
-        my $mes_to_replace;
+            print "Alarm recovery message!\n";
+            my $mes_to_replace;
 
-        if ( $mes_to_replace = retrieve_from_store( $contents->{eventid}, 1 ) ) {
-            print Dumper $mes_to_replace if $self->debug;
-            #always update first [0] message (thread start)
-            $self->chat_updateMessage(
-                {
-                    attachments => $json_attach,
-                    ts          => $mes_to_replace->[0]->{'ts'},
-                    channel     => $mes_to_replace->[0]->{'channel'},
-                    text        => $mes_to_replace->[0]->{'text'}
-                }
-            );
-        }
-
-        if ( not $mes_to_replace or $self->last_err eq 'message_not_found' ) {
-
-            #post the recovery then
-            print "No messages found to be deleted\n";
-
-            my $message =
-              $self->chat_postMessage( { attachments => $json_attach } );
-            $mes_to_replace = {
-                ts      => $message->{'ts'},
-                channel => $message->{'channel'}
-            };
-        }
-
-        sleep CLEAR_ALARM_AFTER_SECS;
-
-        #delete thread starter and all replies
-        foreach my $message_to_delete (@{$mes_to_replace}) {
-            $self->chat_deleteMessage(
-                {
-                    ts      => $message_to_delete->{'ts'},
-                    channel => $message_to_delete->{'channel'}
-                }
-            );
-        }
-
-    } else {
-        print "Alarm message or plain event message or acknowledgement!\n";
-        my $message;
-        #here goes Slack threading
-        if ( defined( $contents->{eventid} ) ) {
-            #Probably a Reply(Acknowlegement)! Let's attach it to the Slack thread...
-            my $mes_to_reply;
-            #false(0) = means do not delete from store. What if there is no recovery?
-            if ( $mes_to_reply = retrieve_from_store( $contents->{eventid}, 0 ) ) {
-                print "Found message to reply in Slack\n";
-                print Dumper $mes_to_reply if $self->debug;
-                #always use  first [0] message found in store (thread start)
-                $message =
-                    $self->chat_postMessage( { attachments => $json_attach, thread_ts => $mes_to_reply->[0]->{ts} } );
-                print "Storing event id...\n" if $self->{debug};
-                store_message( $contents->{eventid}, $message );
-            } else {
-                print "Posting message\n";
-                $message =
-                    $self->chat_postMessage( { attachments => $json_attach} );
-
-                print "Storing event id...\n" if $self->{debug};
-                store_message( $contents->{eventid}, $message );
-
+            if ( $mes_to_replace = retrieve_from_store( $contents->{eventid}, 1 ) ) {
+                print Dumper $mes_to_replace if $self->debug;
+                #always update first [0] message (thread start)
+                $self->chat_updateMessage(
+                    {
+                        attachments => $json_attach,
+                        ts          => $mes_to_replace->[0]->{'ts'},
+                        channel     => $mes_to_replace->[0]->{'channel'},
+                        text        => $mes_to_replace->[0]->{'text'}
+                    }
+                );
             }
-        } else {#if no eventid found, then nothing to store
-            $message =
-                $self->chat_postMessage( { attachments => $json_attach} );
+
+            if ( not $mes_to_replace or $self->last_err eq 'message_not_found' ) {
+
+                #post the recovery then
+                print "No messages found to be deleted\n";
+
+                my $message =
+                $self->chat_postMessage( { attachments => $json_attach } );
+                $mes_to_replace = [{
+                    ts      => $message->{'ts'},
+                    channel => $message->{'channel'}
+                }];
+            }
+
+            #delete only if not 'alarm-no-delete' mode
+            if ($contents->{slack}->{mode} ne 'alarm-no-delete'){
+                sleep CLEAR_ALARM_AFTER_SECS;
+
+                #delete thread starter and all replies
+                foreach my $message_to_delete (@{$mes_to_replace}) {
+                    $self->chat_deleteMessage(
+                        {
+                            ts      => $message_to_delete->{'ts'},
+                            channel => $message_to_delete->{'channel'}
+                        }
+                    );
+                }
+            }
+
+
+        }
+        else {
+            print "Alarm message or plain event message or acknowledgement!\n";
+            my $message;
+            #here goes Slack threading
+            if ( defined( $contents->{eventid} ) ) {
+                #Probably a Reply(Acknowlegement)! Let's attach it to the Slack thread...
+                my $mes_to_reply;
+                #false(0) = means do not delete from store. What if there is no recovery?
+                if ( $mes_to_reply = retrieve_from_store( $contents->{eventid}, 0 ) ) {
+                    print "Found message to reply in Slack\n";
+                    print Dumper $mes_to_reply if $self->debug;
+                    #always use  first [0] message found in store (thread start)
+                    $message =
+                        $self->chat_postMessage( { attachments => $json_attach, thread_ts => $mes_to_reply->[0]->{ts} } );
+                    print "Storing event id...\n" if $self->{debug};
+                    store_message( $contents->{eventid}, $message );
+                }
+                else 
+                {
+                    print "Posting message\n";
+                    $message =
+                        $self->chat_postMessage( { attachments => $json_attach} );
+
+                    print "Storing event id...\n" if $self->{debug};
+                    store_message( $contents->{eventid}, $message );
+
+                }
+            }
         }
 
     }
+    else { #event mode
+        my $message = $self->chat_postMessage( { attachments => $json_attach} );
+    }
+
+
 
 }
 
@@ -438,15 +455,13 @@ sub get_with_retries {
                 sleep $retry_after;
 
                 if ( $retry_counter < 1 ) {
-                    die
-"Too many retries, unable to send message: ${ \$response->status_line } \n";
+                    die "Too many retries, unable to send message: ${ \$response->status_line } \n";
                 }
 
                 $retry_counter--;
                 redo ATTEMPT;
             }
             else {
-
                 die "Slack connection failed! ${ \$response->status_line } \n";
             }
         }
