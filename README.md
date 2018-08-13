@@ -163,13 +163,12 @@ Note You can also define new media for real Zabbix users: use their Slack name i
 ### Action creation:
 Create new action (go to **Configuration -> Action** ,choose  **Event source: Triggers** press **Create action**) that is to be send to Slack.  
 Here is the example:  
-In **Action** tab:  
-Default/recovery subject: anything you like, but I recommend  
+In **Operations** tab:  
+Default subject: anything you like, but I recommend  
 ```
 {TRIGGER.STATUS}:{HOSTNAME}:{TRIGGER.NAME}. 
 ```
-Default message:  
-anything you like, for example:  
+Default message: anything you like, for example:  
 ```
 Host: {HOSTNAME}
 Trigger: {STATUS}: {TRIGGER.NAME}: {TRIGGER.SEVERITY}
@@ -179,7 +178,12 @@ Timestamp: {EVENT.DATE} {EVENT.TIME}
 http://zabbix.local
 Eventid: {EVENT.ID}
 ```
-Recovery message:  
+In **Recovery operations** tab:
+Default subject: anything you like, but I recommend  
+```
+{TRIGGER.STATUS}:{HOSTNAME}:{TRIGGER.NAME}. 
+```
+Default message:  
 ```
 Host: {HOSTNAME}
 Trigger: {STATUS}: {TRIGGER.NAME}: {TRIGGER.SEVERITY}
@@ -189,6 +193,8 @@ Timestamp: {EVENT.RECOVERY.DATE} {EVENT.RECOVERY.TIME}
 http://zabbix.local
 Eventid: {EVENT.ID}
 ```
+
+Note:  In Zabbix 3.4 and newer you can configure **Acknowledgement operations** as well.  
 Note:  if you place Macros **{TRIGGER.SEVERITY}** and **{STATUS}** then your messages in Slack will be color coded.  
 Note:  place line `Eventid: {EVENT.ID}` if you want to use Alarm mode    
 ![image](https://cloud.githubusercontent.com/assets/14870891/14313896/f3edc7e4-fbfc-11e5-842a-2e7410c8d755.png)  
