@@ -5,8 +5,8 @@ Notify alarms from Zabbix 3.x to Slack, HipChat and PagerDuty
 # About
 This guide provides step-by-step guide how to install and use scripts to send notifications from Zabbix to popular collaborations platforms: **HipChat**(Deprecated), **Slack** and Incident Management system **PagerDuty**.
 Here is the idea in brief:  
--	install scripts on Zabbix Server
--	in HipChat, Slack or PagerDuty generate access key for Zabbix
+-	Install scripts on Zabbix Server
+-	In HipChat, Slack or PagerDuty generate access key for Zabbix
 -	In Zabbix setup new Media Type, Actions and assign new media type to new impersonal user
 -	Catch messages in Slack channel, HipChat room or PagerDuty Console:
 ![image](https://cloud.githubusercontent.com/assets/14870891/14309222/bc9f510e-fbe3-11e5-94ff-66a313b00874.png)  
@@ -19,12 +19,13 @@ Here is the idea in brief:
 **All:**  
 -	All configuration is done in Zabbix web-interface(no config files anywhere)  
 -	UTF8 supported  
-- HTTPS/HTTP proxy supported(see how at the end)  
+-   HTTPS/HTTP proxy supported(see how at the end)  
 
 **Slack:**  
 -	Color coding events depending on Trigger Status and Severity  
--	Recovery message from Zabbix will be posted as new message (--slack_mode=event)  
--	Recovery message from Zabbix will update and then delete already posted message in Slack (--slack_mode=alarm)  
+-	Recovery and acknowledgements from Zabbix will be posted as new messages (--slack_mode=event)  
+-	Acknowledgements(Zabbix 3.4+) will be attached as replies to [Slack message thread](https://slackhq.com/threaded-messaging-comes-to-slack). Recovery message from Zabbix will update and then delete initial problem message as well as all acknowledgements. .(--slack_mode=alarm)
+-	Acknowledgements will be attached as replies to Slack message thread. Recovery message from Zabbix will update initial message.(--slack_mode=alarm-no-delete)
 -	JSON can be used to compose Slack messages. See Slack [message attachments](https://api.slack.com/docs/attachments)  
 
 **HipChat:**  
@@ -129,9 +130,9 @@ Here is what you can setup for Slack:
 | Parameter        | Description                      | Default value  | Example value                           | JSON mode(see below)  |  
 | ---------------- |:---------------------:|:--------------:|-----------------------------------------|----|  
 | api_token        |  you bot api token(Mandatory)    | none           |--api_token=xoxb-30461853043-mQE7IGah4bGeC15T5gua4IzK|  Yes |  
-| slack_mode        |  operation mode(event or alarm)   | event           |--slack_mode=event|    Yes |
+| slack_mode        |  operation mode(event,alarm,alarm-no-delete)   | event           |--slack_mode=event|    Yes |
 | debug        |  For providing debug output, useful when running from command line   |   none         |--debug|    Yes |
-| nofork        |  To prevent script from forking on posting to Slack    |   none         |--nofork|    Yes |
+| nofork        |  To prevent script from forking on posting to Slack. |   none         |--nofork|    Yes |
 | no-ssl_verify_hostname        |  To ignore SSL certificate validation failures.   |   none         |--no-ssl_verify_hostname|    Yes |
 
 Press *Add* to finish media type creation.  
@@ -460,6 +461,10 @@ In **Operations** tab select Notification Agent as recipient of the message sent
 
 More on Action configuration in Zabbix can be found  [here:](https://www.zabbix.com/documentation/3.0/manual/config/notifications/action)    
 
+# About using --nofork
+
+If you have Zabbix 3.4 or newer, it recommended to use --nofork option from Zabbix. This will give you an ability to see [errors](https://www.zabbix.com/documentation/3.4/manual/introduction/whatsnew340#return_code_check_for_scripts_and_commands) in Zabbix if something goes wrong. Just make sure you enabled [concurrent sessions](https://www.zabbix.com/documentation/3.4/manual/introduction/whatsnew340#parallel_processing_of_alerts) in Zabbix.  
+The only case where --nofork is not recommend if you use Slack with --slack_mode=alarm, since script then sleeps for 30s before removing messages from Slack.
 
 
 
