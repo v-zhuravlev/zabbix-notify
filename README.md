@@ -479,7 +479,7 @@ More on Action configuration in Zabbix can be found  [here:](https://www.zabbix.
 # About using --nofork
 
 If you have Zabbix 3.4 or newer, it recommended to use --nofork option from Zabbix. This will give you an ability to see [errors](https://www.zabbix.com/documentation/3.4/manual/introduction/whatsnew340#return_code_check_for_scripts_and_commands) in Zabbix if something goes wrong:
-![image](https://user-images.githubusercontent.com/14870891/44031259-16515a3a-9f0c-11e8-871b-e327d04b4722.png)
+![image](https://user-images.githubusercontent.com/14870891/44034320-7e373f58-9f15-11e8-83f2-09016ec60d32.png)
 
  Just make sure you enabled [concurrent sessions](https://www.zabbix.com/documentation/3.4/manual/introduction/whatsnew340#parallel_processing_of_alerts) in Zabbix.  
 Use --nofork with care if you use Slack with --slack_mode=alarm, since script then sleeps for 30s before removing messages from Slack.
