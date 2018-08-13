@@ -72,7 +72,7 @@ die "Message provided is wrong\n"
 my $bot;
 if ($slack) {
     die "Invalid slack_mode is provied. Please use 'alarm' or 'event'\n"
-        unless $contents{slack}->{mode} =~ /^(alarm|event)$/;
+        unless $contents{slack}->{mode} =~ /^(alarm|event|alarm-no-delete)$/;
     $bot = SlackBot->new( { api_token => $api_token } );
     $bot->channel($send_to);
 
