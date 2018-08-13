@@ -24,7 +24,7 @@ Here is the idea in brief:
 **Slack:**  
 -	Color coding events depending on Trigger Status and Severity  
 -	Recovery and acknowledgements from Zabbix will be posted as new messages (--slack_mode=event)  
--	Acknowledgements(Zabbix 3.4+) will be attached as replies to [Slack message thread](https://slackhq.com/threaded-messaging-comes-to-slack). Recovery message from Zabbix will update and then delete initial problem message as well as all acknowledgements. .(--slack_mode=alarm)
+-	Acknowledgements(Zabbix 3.4+) will be attached as replies to [Slack message thread](https://slackhq.com/threaded-messaging-comes-to-slack). Recovery message from Zabbix will update and then delete initial problem message as well as all acknowledgements. .(--slack_mode=alarm) ![image](https://user-images.githubusercontent.com/14870891/44022922-b6c2d0cc-9ef1-11e8-86c6-f830b4b00010.png)
 -	Acknowledgements will be attached as replies to Slack message thread. Recovery message from Zabbix will update initial message.(--slack_mode=alarm-no-delete)
 -	JSON can be used to compose Slack messages. See Slack [message attachments](https://api.slack.com/docs/attachments)  
 
