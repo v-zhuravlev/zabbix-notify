@@ -5,8 +5,8 @@ Notify alarms from Zabbix 3.x to Slack, HipChat and PagerDuty
 # About
 This guide provides step-by-step guide how to install and use scripts to send notifications from Zabbix to popular collaborations platforms: **HipChat**(Deprecated), **Slack** and Incident Management system **PagerDuty**.
 Here is the idea in brief:  
--	install scripts on Zabbix Server
--	in HipChat, Slack or PagerDuty generate access key for Zabbix
+-	Install scripts on Zabbix Server
+-	In HipChat, Slack or PagerDuty generate access key for Zabbix
 -	In Zabbix setup new Media Type, Actions and assign new media type to new impersonal user
 -	Catch messages in Slack channel, HipChat room or PagerDuty Console:
 ![image](https://cloud.githubusercontent.com/assets/14870891/14309222/bc9f510e-fbe3-11e5-94ff-66a313b00874.png)  
@@ -19,12 +19,13 @@ Here is the idea in brief:
 **All:**  
 -	All configuration is done in Zabbix web-interface(no config files anywhere)  
 -	UTF8 supported  
-- HTTPS/HTTP proxy supported(see how at the end)  
+-   HTTPS/HTTP proxy supported(see how at the end)  
 
 **Slack:**  
 -	Color coding events depending on Trigger Status and Severity  
--	Recovery message from Zabbix will be posted as new message (--slack_mode=event)  
--	Recovery message from Zabbix will update and then delete already posted message in Slack (--slack_mode=alarm)  
+-	Recovery and acknowledgements from Zabbix will be posted as new messages (--slack_mode=event)  
+-	Acknowledgements(Zabbix 3.4+) will be attached as replies to [Slack message thread](https://slackhq.com/threaded-messaging-comes-to-slack). Recovery message from Zabbix will update and then delete initial problem message as well as all acknowledgements. .(--slack_mode=alarm) ![image](https://user-images.githubusercontent.com/14870891/44022922-b6c2d0cc-9ef1-11e8-86c6-f830b4b00010.png)
+-	Acknowledgements will be attached as replies to Slack message thread. Recovery message from Zabbix will update initial message.(--slack_mode=alarm-no-delete)
 -	JSON can be used to compose Slack messages. See Slack [message attachments](https://api.slack.com/docs/attachments)  
 
 **HipChat:**  
@@ -129,9 +130,9 @@ Here is what you can setup for Slack:
 | Parameter        | Description                      | Default value  | Example value                           | JSON mode(see below)  |  
 | ---------------- |:---------------------:|:--------------:|-----------------------------------------|----|  
 | api_token        |  you bot api token(Mandatory)    | none           |--api_token=xoxb-30461853043-mQE7IGah4bGeC15T5gua4IzK|  Yes |  
-| slack_mode        |  operation mode(event or alarm)   | event           |--slack_mode=event|    Yes |
+| slack_mode        |  operation mode(event,alarm,alarm-no-delete)   | event           |--slack_mode=event|    Yes |
 | debug        |  For providing debug output, useful when running from command line   |   none         |--debug|    Yes |
-| nofork        |  To prevent script from forking on posting to Slack    |   none         |--nofork|    Yes |
+| nofork        |  To prevent script from forking on posting to Slack. |   none         |--nofork|    Yes |
 | no-ssl_verify_hostname        |  To ignore SSL certificate validation failures.   |   none         |--no-ssl_verify_hostname|    Yes |
 
 Press *Add* to finish media type creation.  
@@ -289,129 +290,8 @@ More on Action configuration in Zabbix can be found  [here:](https://www.zabbix.
 
 That it is it  
 
-# HipChat Setup  
-Now HipChat. Again if you don't have account there you can create it [here](https://www.hipchat.com/sign_up):  
-
-First choose a HipChat **room** where you want your events from Zabbix to land. 
-Then you will need to create new Notification **token** inside this **room**:  
-![image](https://cloud.githubusercontent.com/assets/14870891/14525508/78c1ab26-0246-11e6-9e9e-48f3e9fd0ef1.png)
-once finished copy token, you will need in Zabbix.  
-
-## Test with HipChat 
-Once you have done , go back to console and test the script by running it under user Zabbix:  
-```
-root#:su - zabbix
-cd /usr/local/share/zabbix/alertscripts
-```
-
-To ADD ALARM
-```
-./zbx-notify 'roomname' 'PROBLEM:myHOSTNAME Temperature Failure on DAE5S Bus 1 Enclosure 1' \
-'Host: myHOSTNAME \
-Trigger: PROBLEM: myHOSTNAME Температуа Failure on DAE5S Bus 1 Enclosure 1: High \
-Timestamp: 2016.03.14 11:57:10 eventid: 100502' \
---api_token=5y9zBYM4Htgg4SNrYovMGE1uGvyrUtFOQGHXdK3J \
---hipchat
-```
-
-
-## Zabbix Configuration (HipChat)
-Now all is left is to setup new Action and Media Type.  
-### Media type  
-First go to **Administration -> Media Types**, press **Create media type**  
-![image](https://cloud.githubusercontent.com/assets/14870891/14527483/08648d8c-0253-11e6-810b-94e1e9a5a179.png)  
-Choose Type: *Script*  
-Name: *HipChat*  
-Script name: *zbx-notify*  
-Fill **Script parameters** in the following order  
-1: `{ALERT.SENDTO}`  
-2: `{ALERT.SUBJECT}`  
-3: `{ALERT.MESSAGE}`  
-4: `--api_token=you_token_here`  
-5: `--hipchat`  
-Note that there should be no ticks or quotes after `--api-token=` only the key itself.  
-You may provide additional params as well, by pressing **Add** and filling them in the form:  
-`--param=value`  
-
-Here is what you can setup for HipChat:  
-
-| Parameter        | Description                      | Default value  | Example value                           |  JSON mode (see below)  |
-| ---------------- |:---------------------:|:--------------:|-----------------------------------------|---|  
-| api_token        |  you bot api token(Mandatory)    | none           |--api_token=5y9zBYM4Htgg4SNrYovMGE1uGvyrUtFOQGHXdK3J| Yes |  
-| hipchat_api_url        |  HipChat api url endpoint   | https://api.hipchat.com          |--hipchat_api_url=https://192.168.10.0/hipchat | Yes |
-| hipchat_message_format        |  text or html(see API documentation)   | text           |--hipchat_message_format=html|  Ignored  |
-| hipchat_notify        |  whether to notify HipChat users on new message arrival   | true           |--hipchat_notify=false|  Ignored  |
-| hipchat_from        |  Additional user name in HipChat   | none           |--hipchat_from='Zabbix NW Instance'|  Ignored  |
-| debug        |  For providing debug output, useful when running from command line   |   none         |--debug|  Yes |
-| nofork        |  To prevent script from forking on posting to Slack    |   none         |--nofork|  Yes |
-| no-ssl_verify_hostname        |  To ignore SSL certificate validation failures.   |   none         |--no-ssl_verify_hostname|    Yes |
-
-Press *Add* to finish media type creation.  
-
-### User creation
-As you finish with defining new Media Type for HipChat proceed to next step and create impersonal user:  
-Go to **Administration->Users**  press **Create user**:  
-
-**In User tab:**  
-**Alias**: Notification Agent  
-**Groups**: Make sure you add him proper Group Membership so this user has the rights to see new Events (and so notify on them).  
-**Password**: anything complex you like, you will never use it  
-![image](https://cloud.githubusercontent.com/assets/14870891/14313150/9eacdc1a-fbf8-11e5-9bbd-6ed239d0c599.png)  
-
-**In Media tab:**  
-Create New media:  
-**Type:** HipChat  
-**Send to:** Place your HipChat room name here for example **Zbx-test**.  
-![image](https://cloud.githubusercontent.com/assets/14870891/14527732/a214b26c-0254-11e6-9feb-ffcbfca3d402.png)  
-
- 
-### Action creation:
-Create new action (go to **Configuration -> Action** ,choose  **Event source: Triggers** press **Create action**) that is to be send to HipChat.  
-Here is the example:  
-In **Action** tab:  
-Default/recovery subject: anything you like, but I recommend  
-```
-{STATUS} : {HOSTNAME} : {TRIGGER.NAME}
-```
-Default message:  
-anything you like, for example:  
-```
-{TRIGGER.DESCRIPTION}
-Status: {STATUS}
-Severity: {TRIGGER.SEVERITY}
-Timestamp: {EVENT.DATE} {EVENT.TIME}
-eventid: {EVENT.ID}
-```
-Recovery message:  
-```
-{TRIGGER.DESCRIPTION}
-Status: {STATUS}
-Severity: {TRIGGER.SEVERITY}
-Timestamp: {EVENT.DATE} {EVENT.TIME}
-eventid: {EVENT.ID}
-Event Acknowledgement history: {EVENT.ACK.HISTORY}
-Escalation history: {ESC.HISTORY}
-```
-
-Note:  if you place Macros **{TRIGGER.SEVERITY}** and **{STATUS}** then your messages in HipChat will be color coded.  
-
-As an alternative you can place JSON object here that would represent HipChat  
-See send_room_notification [API](https://www.hipchat.com/docs/apiv2/method/send_room_notification).  
-Note though, that it is required to place all Zabbix MACROS in double brackets [[ ]], so they are properly transformed into JSON String.  
-
- 
- 
-In **Condition** tab do not forget to include **Trigger value = Problem condition**(This option is removed in Zabbix 3.4). The rest depends on your needs.  
-![image](https://cloud.githubusercontent.com/assets/14870891/14313939/2ae4e980-fbfd-11e5-96db-81325b6d40b0.png)
- 
-In **Operations** tab select Notification Agent as recipient of the message sent via HipChat.  
-![image](https://cloud.githubusercontent.com/assets/14870891/14532200/e5b21abe-0268-11e6-9ee8-b1b0244a58d6.png)  
-
-
-More on Action configuration in Zabbix can be found  [here:](https://www.zabbix.com/documentation/3.0/manual/config/notifications/action)    
-
-That it is it again.  
-
+# Hipchat Setup
+Moved here to  [wiki:](https://github.com/v-zhuravlev/zabbix-notify/wiki/Hipchat-Setup)
 
 # PagerDuty Setup  
 And *finally* PagerDuty. If your team doesn't have the account you can get it [here](https://signup.pagerduty.com/accounts/new)  
@@ -581,6 +461,10 @@ In **Operations** tab select Notification Agent as recipient of the message sent
 
 More on Action configuration in Zabbix can be found  [here:](https://www.zabbix.com/documentation/3.0/manual/config/notifications/action)    
 
+# About using --nofork
+
+If you have Zabbix 3.4 or newer, it recommended to use --nofork option from Zabbix. This will give you an ability to see [errors](https://www.zabbix.com/documentation/3.4/manual/introduction/whatsnew340#return_code_check_for_scripts_and_commands) in Zabbix if something goes wrong. Just make sure you enabled [concurrent sessions](https://www.zabbix.com/documentation/3.4/manual/introduction/whatsnew340#parallel_processing_of_alerts) in Zabbix.  
+The only case where --nofork is not recommend if you use Slack with --slack_mode=alarm, since script then sleeps for 30s before removing messages from Slack.
 
 
 
