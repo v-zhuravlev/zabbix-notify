@@ -76,9 +76,9 @@ sub post_message {
     #Slack possible modes:
     # event - Notifications from Zabbix are posted in Slack in without any 'magic'
     # alarm - When problem is resolved in Zabbix - notification is updated in Slack and then deleted. 
-    #         Acknowlegments are attached as replies to thread
+    #         Acknowledgements are attached as replies to thread
     # alarm-no-delete - When problem is resolved in Zabbix - notification is updated in Slack but not deleted.
-    #         Acknowlegments are attached as replies to thread
+    #         Acknowledgements are attached as replies to thread
     
 
     if (($contents->{slack}->{mode} eq 'alarm' or $contents->{slack}->{mode} eq 'alarm-no-delete')
@@ -163,7 +163,7 @@ sub post_replyMessage {
     my $json_attach = shift;
 
     if ( defined( $contents->{eventid} ) ) {
-        #Probably a Reply(Acknowlegement)! Let's attach it to the Slack thread...
+        #Probably a Reply(Acknowledgement)! Let's attach it to the Slack thread...
         my $mes_to_reply;
         #false(0) = means do not delete from store.
         if ( $mes_to_reply = retrieve_from_store( $contents->{eventid}, 0 ) ) {

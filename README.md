@@ -35,7 +35,7 @@ Here is the idea in brief:
 
 **PagerDuty:**  
 -	Recovery message from Zabbix will resolve already created incident in PagerDuty  
--   Acknowledgements will be added already created incidenents
+-   Acknowledgements will be added already created incidents
 -	JSON can be used to compose messages. See PagerDuty API  [here](https://developer.pagerduty.com/documentation/integration/events/trigger)  and [here](https://developer.pagerduty.com/documentation/integration/events/resolve)  
 
 
@@ -116,13 +116,13 @@ First go to **Administration -> Media Types**, press **Create media type**
 Choose Type: *Script*  
 Name: *Slack*  
 Script name: *zbx-notify*  
-Fill **Script paramters** in the following order  
+Fill **Script parameters** in the following order  
 1: `{ALERT.SENDTO}`  
 2: `{ALERT.SUBJECT}`  
 3: `{ALERT.MESSAGE}`  
 4: `--api_token=you_token_here`  
 5: `--slack`  
-6: `--no-fork` (for Zabbix 3.4+ only)  
+6: `--no-fork` (for Zabbix 3.4+ only)
 Note that there should be no ticks or quotes after `--api-token=` only the key itself.  
 You may provide additional params as well, by pressing **Add** and filling them in the form:  
 `--param=value`  
@@ -134,7 +134,7 @@ Here is what you can setup for Slack:
 | api_token        |  you bot api token(Mandatory)    | none           |--api_token=xoxb-30461853043-mQE7IGah4bGeC15T5gua4IzK|  Yes |  
 | slack_mode        |  operation mode(event,alarm,alarm-no-delete)   | event           |--slack_mode=event|    Yes |
 | debug        |  For providing debug output, useful when running from command line   |   none         |--debug|    Yes |
-| nofork        |  To prevent script from forking on posting to Slack. |   none         |--nofork|    Yes |
+| no-fork          |  To prevent script from forking on posting to Slack. |   none         |--no-fork|    Yes |
 | no-ssl_verify_hostname        |  To ignore SSL certificate validation failures.   |   none         |--no-ssl_verify_hostname|    Yes |
 
 Press *Add* to finish media type creation.  
@@ -205,7 +205,7 @@ In **Acknowledgement operations** (Zabbix 3.4+) tab:
 Current problem status is {EVENT.STATUS}, Eventid: {EVENT.ID}
 ```
 Note:  if you place Macros **{TRIGGER.SEVERITY}** and **{STATUS}** then your messages in Slack will be color coded.  
-Note:  place line `Eventid: {EVENT.ID}` if you want to use Alarm mode in all messages, including Acnkowledgements.     
+Note:  place line `Eventid: {EVENT.ID}` if you want to use Alarm mode in all messages, including Acknowledgements.     
 
 As an alternative you can place JSON object here that would represent Slack [attachment:](https://api.slack.com/docs/attachments)  
 ![image](https://cloud.githubusercontent.com/assets/14870891/14406644/0c820002-feb6-11e5-98e0-6acadad8b7f1.png)  
@@ -252,7 +252,7 @@ And for Recovery:
             "pretext": "Cleared",
             "author_name": "[[{HOST.NAME}]]",
             "title": "[[{TRIGGER.NAME}]]",
-            "title_link": "http://zabbux/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.RECOVERY.ID}",
+            "title_link": "http://zabbix/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.RECOVERY.ID}",
             "text": "[[{TRIGGER.DESCRIPTION}]]",
             "fields": [
                 {
@@ -317,7 +317,7 @@ On the next page choose Zabbix from the list of services and choose a name for y
 You will see Service key on the next page: save it somewhere as you will need this in Zabbix.
 
 ## Test with PagerDuty 
-Once you have done the previous setp , go back to console and test the script by running it under user Zabbix:  
+Once you have done the previous step, go back to console and test the script by running it under user Zabbix:  
 ```
 root#:su - zabbix
 cd /usr/local/share/zabbix/alertscripts
@@ -330,7 +330,7 @@ To ADD ALARM
 Trigger: PROBLEM: myHOSTNAME Температуа Failure on DAE5S Bus 1 Enclosure 1: High \
 Timestamp: 2016.03.14 11:57:10 eventid: 100502' \
 --api_token=1baff6f955c040d795387e7ab9d62090 \
---pagerduty --nofork
+--pagerduty --no-fork
 ```
 To RESOLVE IT  
 ```
@@ -339,7 +339,7 @@ To RESOLVE IT
 Trigger: OK: myHOSTNAME Температуа Failure on DAE5S Bus 1 Enclosure 1: High \
 Timestamp: 2016.03.14 11:57:10 eventid: 100502' \
 --api_token=1baff6f955c040d795387e7ab9d62090 \
---pagerduty --nofork
+--pagerduty --no-fork
 ```
 
 
@@ -357,7 +357,7 @@ Fill **Script parameters** in the following order
 3: `{ALERT.MESSAGE}`  
 4: `--api_token=you_token_here`  
 5: `--pagerduty`  
-6: `--no-fork` (for Zabbix 3.4+ only)  
+6: `--no-fork` (for Zabbix 3.4+ only)
 Note that there should be no ticks or quotes after `--api-token=` only the key itself.  
 You may provide additional params as well, by pressing **Add** and filling them in the form:  
 `--param=value`  
@@ -370,7 +370,7 @@ Here is what you can setup for PagerDuty:
 | pagerduty_client        |  Zabbix instance name(only works if both client and client_url are provided)   | none           |--pagerduty_client=Myzabbix |  Ignored |
 | pagerduty_client_url        |  Zabbix instance name link   | none           | --pagerduty_client_url=http://zabbix.local |  Ignored |
 | debug        |  For providing debug output, useful when running from command line   |   none         |--debug|  Yes |
-| nofork       |  To prevent script from forking on posting to Slack    |   none         |--nofork|  Yes |
+| no-fork          |  To prevent script from forking on posting to Slack    |   none         |--no-fork|  Yes |
 | no-ssl_verify_hostname        |  To ignore SSL certificate validation failures.   |   none         |--no-ssl_verify_hostname|    Yes |
 
 Press *Add* to finish media type creation.  
@@ -476,19 +476,19 @@ In **Operations** tab select Notification Agent as recipient of the message sent
 
 More on Action configuration in Zabbix can be found  [here:](https://www.zabbix.com/documentation/3.0/manual/config/notifications/action)    
 
-# About using --nofork
+# About using --no-fork
 
-If you have Zabbix 3.4 or newer, it recommended to use --nofork option from Zabbix. This will give you an ability to see [errors](https://www.zabbix.com/documentation/3.4/manual/introduction/whatsnew340#return_code_check_for_scripts_and_commands) in Zabbix if something goes wrong:
+If you have Zabbix 3.4 or newer, it recommended to use --no-fork option from Zabbix. This will give you an ability to see [errors](https://www.zabbix.com/documentation/3.4/manual/introduction/whatsnew340#return_code_check_for_scripts_and_commands) in Zabbix if something goes wrong:
 ![image](https://user-images.githubusercontent.com/14870891/44034320-7e373f58-9f15-11e8-83f2-09016ec60d32.png)
 
  Just make sure you enabled [concurrent sessions](https://www.zabbix.com/documentation/3.4/manual/introduction/whatsnew340#parallel_processing_of_alerts) in Zabbix.  
-Use --nofork with care if you use Slack with --slack_mode=alarm, since script then sleeps for 30s before removing messages from Slack.
+Use --no-fork with care if you use Slack with --slack_mode=alarm, since script then sleeps for 30s before removing messages from Slack.
 
 
 
 # Troubleshooting
 In order to troubleshoot problems, try to send test message from the command line under user `zabbix`.  
-Try using `--nofork` and `--debug` command line switches  
+Try using `--no-fork` and `--debug` command line switches
 
 You may also want to increase the logging of alerter process to DEBUG for a while. 
 (optional) If appropriate, decrease the level of logging of all zabbix processes to reduce the noise in the log file:  
