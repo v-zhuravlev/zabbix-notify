@@ -205,7 +205,7 @@ In **Acknowledgement operations** (Zabbix 3.4+) tab:
 Current problem status is {EVENT.STATUS}, Eventid: {EVENT.ID}
 ```
 Note:  if you place Macros **{TRIGGER.SEVERITY}** and **{STATUS}** then your messages in Slack will be color coded.  
-Note:  place line `Eventid: {EVENT.ID}` if you want to use Alarm mode in all messages, including Acnkowledgements.     
+Note:  place line `Eventid: {EVENT.ID}` if you want to use Alarm mode in all messages, including Acknowledgements.     
 
 As an alternative you can place JSON object here that would represent Slack [attachment:](https://api.slack.com/docs/attachments)  
 ![image](https://cloud.githubusercontent.com/assets/14870891/14406644/0c820002-feb6-11e5-98e0-6acadad8b7f1.png)  
