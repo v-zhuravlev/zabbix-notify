@@ -252,7 +252,7 @@ And for Recovery:
             "pretext": "Cleared",
             "author_name": "[[{HOST.NAME}]]",
             "title": "[[{TRIGGER.NAME}]]",
-            "title_link": "http://zabbux/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.RECOVERY.ID}",
+            "title_link": "http://zabbix/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.RECOVERY.ID}",
             "text": "[[{TRIGGER.DESCRIPTION}]]",
             "fields": [
                 {
