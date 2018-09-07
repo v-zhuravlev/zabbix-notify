@@ -317,7 +317,7 @@ On the next page choose Zabbix from the list of services and choose a name for y
 You will see Service key on the next page: save it somewhere as you will need this in Zabbix.
 
 ## Test with PagerDuty 
-Once you have done the previous setp , go back to console and test the script by running it under user Zabbix:  
+Once you have done the previous step, go back to console and test the script by running it under user Zabbix:  
 ```
 root#:su - zabbix
 cd /usr/local/share/zabbix/alertscripts
