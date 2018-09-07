@@ -116,7 +116,7 @@ First go to **Administration -> Media Types**, press **Create media type**
 Choose Type: *Script*  
 Name: *Slack*  
 Script name: *zbx-notify*  
-Fill **Script paramters** in the following order  
+Fill **Script parameters** in the following order  
 1: `{ALERT.SENDTO}`  
 2: `{ALERT.SUBJECT}`  
 3: `{ALERT.MESSAGE}`  
