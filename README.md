@@ -35,7 +35,7 @@ Here is the idea in brief:
 
 **PagerDuty:**  
 -	Recovery message from Zabbix will resolve already created incident in PagerDuty  
--   Acknowledgements will be added already created incidenents
+-   Acknowledgements will be added already created incidents
 -	JSON can be used to compose messages. See PagerDuty API  [here](https://developer.pagerduty.com/documentation/integration/events/trigger)  and [here](https://developer.pagerduty.com/documentation/integration/events/resolve)  
 
 
