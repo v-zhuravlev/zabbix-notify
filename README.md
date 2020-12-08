@@ -1,3 +1,9 @@
+DEPRECATED! For Zabbix 4.4 or newer please use the official integration with Slack/PagerDuty based on webhooks. 
+
+https://git.zabbix.com/projects/ZBX/repos/zabbix/browse/templates/media/slack
+https://git.zabbix.com/projects/ZBX/repos/zabbix/browse/templates/media/pagerduty
+
+
 # zabbix-notify
 [![Build Status](https://travis-ci.org/v-zhuravlev/zabbix-notify.svg?branch=master)](https://travis-ci.org/v-zhuravlev/zabbix-notify)  
 Notify alarms from Zabbix 3.x to Slack, HipChat and PagerDuty  
